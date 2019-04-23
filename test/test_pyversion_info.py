@@ -1,4 +1,3 @@
-import datetime
 from   datetime       import date
 import json
 from   os.path        import dirname, join
@@ -7,14 +6,15 @@ from   pyversion_info import PyVersionInfo, UnknownVersionError
 
 INVALID_VERSIONS = ['', '1.2.3.4', '1.2.3rc1', 'foobar', 'a.b.c']
 
-class MockDate(object):
-    @classmethod
-    def today(cls):
-        return date(2019, 4, 23)
-
 @pytest.fixture(autouse=True)
-def use_fixed_date(monkeypatch):
-    monkeypatch.setattr(datetime, 'date', MockDate)
+def use_fixed_date(mocker):
+    # Mocking/monkeypatching just the `today()` method of `date` doesn't seem
+    # to be an option, and monkeypatching the `date` class with a custom class
+    # that just implements `today()` causes problems on PyPy.  Fortunately,
+    # both CPython and PyPy implement `date.today()` by calling `time.time()`,
+    # so we just need to mock that and hope the implementation never changes.
+    mocker.patch('time.time', return_value=1556052408)
+    # Time is now 2019-04-23T16:46:48-04:00.
 
 @pytest.fixture(scope='module')
 def pyvinfo():
