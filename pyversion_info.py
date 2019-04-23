@@ -1,6 +1,17 @@
 """
 List released Python versions and their release & EOL dates
 
+Ever needed to know what Python versions were currently supported, or how many
+subversions a given Python version had?  Wondering how long until a given
+version came out or reached end-of-life?  The answers to these and some other
+questions can be found with this library.
+
+``pyversion-info`` pulls its data every run from
+`jwodder/pyversion-info-data <https://github.com/jwodder/pyversion-info-data>`_
+on GitHub.  Prerelease versions are not (currently) included.  I promise
+24-hour turnaround times for keeping the database up-to-date until I am hit by
+a bus.
+
 Visit <https://github.com/jwodder/pyversion-info> for more information.
 """
 
@@ -51,8 +62,8 @@ class PyVersionInfo(object):
 
     def __init__(self, data):
         """
-        :param dict data: Version release dates and series EOL dates in form
-            specified by the schema at
+        :param dict data: Version release dates and series EOL dates structured
+            in accordance with the JSON Schema at
             <https://raw.githubusercontent.com/jwodder/pyversion-info-data/master/pyversion-info-data.schema.json>
         """
         self.version_release_dates = {
