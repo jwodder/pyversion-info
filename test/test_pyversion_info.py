@@ -1,14 +1,20 @@
+import datetime
 from   datetime       import date
 import json
 from   os.path        import dirname, join
 import pytest
 from   pyversion_info import PyVersionInfo, UnknownVersionError
 
-INVALID_VERSIONS = ['1.2.3.4', '1.2.3rc1', 'foobar', 'a.b.c']
+INVALID_VERSIONS = ['', '1.2.3.4', '1.2.3rc1', 'foobar', 'a.b.c']
+
+class MockDate(object):
+    @classmethod
+    def today(cls):
+        return date(2019, 4, 23)
 
 @pytest.fixture(autouse=True)
 def use_fixed_date(monkeypatch):
-    monkeypatch.setattr(date, 'today', lambda: date(2019, 4, 23))
+    monkeypatch.setattr(datetime, 'date', MockDate)
 
 @pytest.fixture(scope='module')
 def pyvinfo():
@@ -51,7 +57,7 @@ def test_micro_versions(pyvinfo):
         "2.6.8", "2.6.9",
         "2.7.0", "2.7.1", "2.7.2", "2.7.3", "2.7.4", "2.7.5", "2.7.6", "2.7.7",
         "2.7.8", "2.7.9", "2.7.10", "2.7.11", "2.7.12", "2.7.13", "2.7.14",
-        "2.7.15", "2.7.16", "2.7.17", "2.7.18",
+        "2.7.15", "2.7.16",
         "3.0.0", "3.0.1",
         "3.1.0", "3.1.1", "3.1.2", "3.1.3", "3.1.4", "3.1.5",
         "3.2.0", "3.2.1", "3.2.2", "3.2.3", "3.2.4", "3.2.5", "3.2.6",
@@ -354,8 +360,8 @@ def test_release_date_unknown(pyvinfo, v):
     ("2.7.14", True),
     ("2.7.15", True),
     ("2.7.16", True),
-    ("2.7.17", True),
-    ("2.7.18", True),
+    ("2.7.17", False),
+    ("2.7.18", False),
     ("3", True),
     ("3.0", True),
     ("3.0.0", True),
@@ -486,7 +492,7 @@ def test_eol_date_unknown(pyvinfo, v):
     assert str(excinfo.value) == 'Unknown version: {!r}'.format(v)
     assert excinfo.value.version == v
 
-@pytest.mock.parametrize('series,is_eol', [
+@pytest.mark.parametrize('series,is_eol', [
     ("0.9", True),
     ("1.0", True),
     ("1.1", True),
@@ -532,7 +538,7 @@ def test_is_eol_unknown(pyvinfo, v):
     assert str(excinfo.value) == 'Unknown version: {!r}'.format(v)
     assert excinfo.value.version == v
 
-@pytest.mock.parametrize('series,is_supported', [
+@pytest.mark.parametrize('series,is_supported', [
     ("0.9", False),
     ("1.0", False),
     ("1.1", False),
@@ -626,7 +632,14 @@ def test_subversions_invalid(pyvinfo, v):
         pyvinfo.subversions(v)
     assert str(excinfo.value) == 'Invalid version string: {!r}'.format(v)
 
-@pytest.mark.parametrize('v', ['0.8', '2.5.7', '3.9', '3.9.0', '4'])
+@pytest.mark.parametrize('v', ['2.5.7', '3.7.3', '3.9.0'])
+def test_subversions_invalid_micro(pyvinfo, v):
+    with pytest.raises(ValueError) as excinfo:
+        pyvinfo.subversions(v)
+    assert str(excinfo.value) \
+        == 'Micro versions do not have subversions: {!r}'.format(v)
+
+@pytest.mark.parametrize('v', ['0.8', '3.9', '4'])
 def test_subversions_unknown(pyvinfo, v):
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.subversions(v)
