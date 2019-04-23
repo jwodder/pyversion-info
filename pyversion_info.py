@@ -1,3 +1,15 @@
+"""
+Fetch supported Python versions, release dates, and EOL dates
+
+Visit <https://github.com/jwodder/pyversion-info> for more information.
+"""
+
+__version__      = '0.1.0.dev1'
+__author__       = 'John Thorvald Wodder II'
+__author_email__ = 'pyversion-info@varonathe.org'
+__license__      = 'MIT'
+__url__          = 'https://github.com/jwodder/pyversion-info'
+
 from   appdirs                        import user_cache_dir
 from   cachecontrol                   import CacheControl
 from   cachecontrol.caches.file_cache import FileCache
