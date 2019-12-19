@@ -176,3 +176,12 @@ Utilities
     ``PyVersionInfo`` object.  The HTTP response is cached in ``cache_dir`` to
     speed up future requests (or ``cache_dir`` can be set to `None` to disable
     caching).
+
+
+Restrictions
+============
+
+The database is generally only updated when an edit is made to a release
+schedule PEP.  Occasionally, a deadline listed in a PEP is missed, but the PEP
+is not updated for a couple days, and so for a brief period this library will
+falsely report the given version as released.
