@@ -35,7 +35,10 @@ __all__ = [
 ]
 
 #: The default URL from which to download the version release data
-DATA_URL = 'https://raw.githubusercontent.com/jwodder/pyversion-info-data/master/pyversion-info-data.json'
+DATA_URL = (
+    'https://raw.githubusercontent.com/jwodder/pyversion-info-data/master'
+    '/pyversion-info-data.json'
+)
 
 #: The default directory in which the version release data is cached
 CACHE_DIR = user_cache_dir('pyversion-info', 'jwodder')
