@@ -1,6 +1,6 @@
 v0.2.0 (in development)
 -----------------------
-- Support Python 3.8
+- Support Python 3.8 and 3.9
 - Add a note to the README about the possibility of release deadlines being
   missed
 - Drop support for Python 3.4

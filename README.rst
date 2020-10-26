@@ -22,6 +22,7 @@
 `GitHub <https://github.com/jwodder/pyversion-info>`_
 | `PyPI <https://pypi.org/project/pyversion-info/>`_
 | `Issues <https://github.com/jwodder/pyversion-info/issues>`_
+| `Changelog <https://github.com/jwodder/pyversion-info/blob/master/CHANGELOG.md>`_
 
 .. contents::
     :backlinks: top
