@@ -51,44 +51,36 @@ Just use `pip <https://pip.pypa.io>`_ (You have pip, right?) to install
 Examples
 ========
 
-Start out by fetching the database::
+Start out by fetching the database:
 
-    >>> from pyversion_info import get_pyversion_info
-    >>> pyvinfo = get_pyversion_info()
+>>> from pyversion_info import get_pyversion_info
+>>> pyvinfo = get_pyversion_info()
 
-Get a list of all currently-supported Python series::
+Get a list of all currently-supported Python series:
 
-    >>> pyvinfo.supported_series()
-    ['2.7', '3.5', '3.6', '3.7']
+>>> pyvinfo.supported_series()
+['2.7', '3.5', '3.6', '3.7']
 
 When does 3.8 come out?
 
-::
-
-    >>> pyvinfo.release_date("3.8")
-    datetime.date(2019, 10, 21)
+>>> pyvinfo.release_date("3.8")
+datetime.date(2019, 10, 21)
 
 When does 2.7 reach end-of-life?
 
-::
-
-    >>> pyvinfo.eol_date("2.7")
-    datetime.date(2020, 1, 1)
+>>> pyvinfo.eol_date("2.7")
+datetime.date(2020, 1, 1)
 
 Just how many micro versions does 2.7 have, anyway?
 
-::
-
-    >>> pyvinfo.subversions("2.7")
-    ['2.7.0', '2.7.1', '2.7.2', '2.7.3', '2.7.4', '2.7.5', '2.7.6', '2.7.7', '2.7.8', '2.7.9', '2.7.10', '2.7.11', '2.7.12', '2.7.13', '2.7.14', '2.7.15', '2.7.16']
+>>> pyvinfo.subversions("2.7")
+['2.7.0', '2.7.1', '2.7.2', '2.7.3', '2.7.4', '2.7.5', '2.7.6', '2.7.7', '2.7.8', '2.7.9', '2.7.10', '2.7.11', '2.7.12', '2.7.13', '2.7.14', '2.7.15', '2.7.16']
 
 
 How many versions of Python 3 have been released?
 
-::
-
-    >>> pyvinfo.subversions("3")
-    ['3.0', '3.1', '3.2', '3.3', '3.4', '3.5', '3.6', '3.7']
+>>> pyvinfo.subversions("3")
+['3.0', '3.1', '3.2', '3.3', '3.4', '3.5', '3.6', '3.7']
 
 
 API
