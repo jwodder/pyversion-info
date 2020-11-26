@@ -39,10 +39,11 @@ a bus.
 
 Installation
 ============
-Just use `pip <https://pip.pypa.io>`_ (You have pip, right?) to install
+``pyversion-info`` requires Python 3.6 or higher.  Just use `pip
+<https://pip.pypa.io>`_ for Python 3 (You have pip, right?) to install
 ``pyversion-info`` and its dependencies::
 
-    pip install pyversion-info
+    python3 -m pip install pyversion-info
 
 
 Examples
@@ -72,7 +73,6 @@ Just how many micro versions does 2.7 have, anyway?
 
 >>> pyvinfo.subversions("2.7")
 ['2.7.0', '2.7.1', '2.7.2', '2.7.3', '2.7.4', '2.7.5', '2.7.6', '2.7.7', '2.7.8', '2.7.9', '2.7.10', '2.7.11', '2.7.12', '2.7.13', '2.7.14', '2.7.15', '2.7.16']
-
 
 How many versions of Python 3 have been released?
 

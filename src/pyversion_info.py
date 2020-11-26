@@ -194,7 +194,7 @@ class PyVersionInfo(object):
         except ValueError:
             raise ValueError('Invalid series name: ' + repr(series))
         try:
-            return self.series_eol_dates['{}.{}'.format(x,y)]
+            return self.series_eol_dates[f'{x}.{y}']
         except KeyError:
             raise UnknownVersionError(series)
 
@@ -272,7 +272,6 @@ class UnknownVersionError(Exception):
     def __init__(self, version):
         #: The unknown version the caller asked about
         self.version = version
-        super(UnknownVersionError, self).__init__(version)
 
     def __str__(self):
         return 'Unknown version: ' + repr(self.version)
