@@ -249,13 +249,13 @@ def test_release_date(pyvinfo, v, rel):
 def test_release_date_invalid(pyvinfo, v):
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.release_date(v)
-    assert str(excinfo.value) == 'Invalid version string: {!r}'.format(v)
+    assert str(excinfo.value) == f'Invalid version string: {v!r}'
 
 @pytest.mark.parametrize('v', ['0.8', '2.5.7', '3.9', '3.9.0', '4'])
 def test_release_date_unknown(pyvinfo, v):
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.release_date(v)
-    assert str(excinfo.value) == 'Unknown version: {!r}'.format(v)
+    assert str(excinfo.value) == f'Unknown version: {v!r}'
     assert excinfo.value.version == v
 
 @pytest.mark.parametrize('v,rel', [
@@ -437,13 +437,13 @@ def test_is_released(pyvinfo, v, rel):
 def test_is_released_invalid(pyvinfo, v):
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.is_released(v)
-    assert str(excinfo.value) == 'Invalid version string: {!r}'.format(v)
+    assert str(excinfo.value) == f'Invalid version string: {v!r}'
 
 @pytest.mark.parametrize('v', ['0.8', '2.5.7', '3.9', '3.9.0', '4'])
 def test_is_released_unknown(pyvinfo, v):
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.is_released(v)
-    assert str(excinfo.value) == 'Unknown version: {!r}'.format(v)
+    assert str(excinfo.value) == f'Unknown version: {v!r}'
     assert excinfo.value.version == v
 
 @pytest.mark.parametrize('series,eol', [
@@ -483,13 +483,13 @@ def test_eol_date(pyvinfo, series, eol):
 def test_eol_date_invalid(pyvinfo, v):
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.eol_date(v)
-    assert str(excinfo.value) == 'Invalid series name: {!r}'.format(v)
+    assert str(excinfo.value) == f'Invalid series name: {v!r}'
 
 @pytest.mark.parametrize('v', ['0.8', '3.9'])
 def test_eol_date_unknown(pyvinfo, v):
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.eol_date(v)
-    assert str(excinfo.value) == 'Unknown version: {!r}'.format(v)
+    assert str(excinfo.value) == f'Unknown version: {v!r}'
     assert excinfo.value.version == v
 
 @pytest.mark.parametrize('series,is_eol', [
@@ -529,13 +529,13 @@ def test_is_eol(pyvinfo, series, is_eol):
 def test_is_eol_invalid(pyvinfo, v):
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.is_eol(v)
-    assert str(excinfo.value) == 'Invalid series name: {!r}'.format(v)
+    assert str(excinfo.value) == f'Invalid series name: {v!r}'
 
 @pytest.mark.parametrize('v', ['0.8', '3.9'])
 def test_is_eol_unknown(pyvinfo, v):
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.is_eol(v)
-    assert str(excinfo.value) == 'Unknown version: {!r}'.format(v)
+    assert str(excinfo.value) == f'Unknown version: {v!r}'
     assert excinfo.value.version == v
 
 @pytest.mark.parametrize('series,is_supported', [
@@ -575,13 +575,13 @@ def test_is_supported(pyvinfo, series, is_supported):
 def test_is_supported_invalid(pyvinfo, v):
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.is_supported(v)
-    assert str(excinfo.value) == 'Invalid series name: {!r}'.format(v)
+    assert str(excinfo.value) == f'Invalid series name: {v!r}'
 
 @pytest.mark.parametrize('v', ['0.8', '3.9'])
 def test_is_supported_unknown(pyvinfo, v):
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.is_supported(v)
-    assert str(excinfo.value) == 'Unknown version: {!r}'.format(v)
+    assert str(excinfo.value) == f'Unknown version: {v!r}'
     assert excinfo.value.version == v
 
 @pytest.mark.parametrize('v,subs', [
@@ -630,18 +630,18 @@ def test_subversions(pyvinfo, v, subs):
 def test_subversions_invalid(pyvinfo, v):
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.subversions(v)
-    assert str(excinfo.value) == 'Invalid version string: {!r}'.format(v)
+    assert str(excinfo.value) == f'Invalid version string: {v!r}'
 
 @pytest.mark.parametrize('v', ['2.5.7', '3.7.3', '3.9.0'])
 def test_subversions_invalid_micro(pyvinfo, v):
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.subversions(v)
     assert str(excinfo.value) \
-        == 'Micro versions do not have subversions: {!r}'.format(v)
+        == f'Micro versions do not have subversions: {v!r}'
 
 @pytest.mark.parametrize('v', ['0.8', '3.9', '4'])
 def test_subversions_unknown(pyvinfo, v):
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.subversions(v)
-    assert str(excinfo.value) == 'Unknown version: {!r}'.format(v)
+    assert str(excinfo.value) == f'Unknown version: {v!r}'
     assert excinfo.value.version == v

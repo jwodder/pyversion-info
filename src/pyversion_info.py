@@ -60,7 +60,7 @@ def get_pyversion_info(url=DATA_URL, cache_dir=CACHE_DIR):
     r.raise_for_status()
     return PyVersionInfo(r.json())
 
-class PyVersionInfo(object):
+class PyVersionInfo:
     """ A class for querying Python versions and their release & EOL dates """
 
     def __init__(self, data):
