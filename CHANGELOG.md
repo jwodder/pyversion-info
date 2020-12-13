@@ -1,5 +1,5 @@
-v0.2.0 (in development)
------------------------
+v0.2.0 (2020-12-13)
+-------------------
 - Support Python 3.8 and 3.9
 - Add a note to the README about the possibility of release deadlines being
   missed
