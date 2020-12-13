@@ -56,9 +56,10 @@ def get_pyversion_info(url=DATA_URL, cache_dir=CACHE_DIR):
     s = requests.Session()
     if cache_dir is not None:
         s = CacheControl(s, cache=FileCache(cache_dir))
-    r = s.get(url)
-    r.raise_for_status()
-    return PyVersionInfo(r.json())
+    with s:
+        r = s.get(url)
+        r.raise_for_status()
+        return PyVersionInfo(r.json())
 
 class PyVersionInfo:
     """ A class for querying Python versions and their release & EOL dates """
