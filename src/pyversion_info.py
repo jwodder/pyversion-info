@@ -15,33 +15,34 @@ a bus.
 Visit <https://github.com/jwodder/pyversion-info> for more information.
 """
 
-__version__      = '0.2.0'
-__author__       = 'John Thorvald Wodder II'
-__author_email__ = 'pyversion-info@varonathe.org'
-__license__      = 'MIT'
-__url__          = 'https://github.com/jwodder/pyversion-info'
+__version__ = "0.2.0"
+__author__ = "John Thorvald Wodder II"
+__author_email__ = "pyversion-info@varonathe.org"
+__license__ = "MIT"
+__url__ = "https://github.com/jwodder/pyversion-info"
 
-from   collections                    import OrderedDict
-from   datetime                       import date, datetime
-from   appdirs                        import user_cache_dir
-from   cachecontrol                   import CacheControl
-from   cachecontrol.caches.file_cache import FileCache
+from collections import OrderedDict
+from datetime import date, datetime
+from appdirs import user_cache_dir
+from cachecontrol import CacheControl
+from cachecontrol.caches.file_cache import FileCache
 import requests
 
 __all__ = [
-    'PyVersionInfo',
-    'UnknownVersionError',
-    'get_pyversion_info',
+    "PyVersionInfo",
+    "UnknownVersionError",
+    "get_pyversion_info",
 ]
 
 #: The default URL from which to download the version release data
 DATA_URL = (
-    'https://raw.githubusercontent.com/jwodder/pyversion-info-data/master'
-    '/pyversion-info-data.json'
+    "https://raw.githubusercontent.com/jwodder/pyversion-info-data/master"
+    "/pyversion-info-data.json"
 )
 
 #: The default directory in which the version release data is cached
-CACHE_DIR = user_cache_dir('pyversion-info', 'jwodder')
+CACHE_DIR = user_cache_dir("pyversion-info", "jwodder")
+
 
 def get_pyversion_info(url=DATA_URL, cache_dir=CACHE_DIR):
     """
@@ -61,8 +62,9 @@ def get_pyversion_info(url=DATA_URL, cache_dir=CACHE_DIR):
         r.raise_for_status()
         return PyVersionInfo(r.json())
 
+
 class PyVersionInfo:
-    """ A class for querying Python versions and their release & EOL dates """
+    """A class for querying Python versions and their release & EOL dates"""
 
     def __init__(self, data):
         """
@@ -71,17 +73,15 @@ class PyVersionInfo:
             <https://raw.githubusercontent.com/jwodder/pyversion-info-data/master/pyversion-info-data.schema.json>
         """
         self.version_release_dates = {
-            v: parse_date(d) for v,d in data["version_release_dates"].items()
+            v: parse_date(d) for v, d in data["version_release_dates"].items()
         }
         self.series_eol_dates = {
-            v: parse_date(d) for v,d in data["series_eol_dates"].items()
+            v: parse_date(d) for v, d in data["series_eol_dates"].items()
         }
         self.version_trie = OrderedDict()
         for v in sorted(map(parse_version, self.version_release_dates.keys())):
             x, y, z = v
-            self.version_trie.setdefault(x, OrderedDict())\
-                             .setdefault(y, [])\
-                             .append(z)
+            self.version_trie.setdefault(x, OrderedDict()).setdefault(y, []).append(z)
 
     def supported_series(self):
         """
@@ -100,9 +100,7 @@ class PyVersionInfo:
 
         :rtype: list[str]
         """
-        return [
-            str(v) for v in self.version_trie.keys() if self.is_released(str(v))
-        ]
+        return [str(v) for v in self.version_trie.keys() if self.is_released(str(v))]
 
     def minor_versions(self):
         """
@@ -113,9 +111,7 @@ class PyVersionInfo:
         """
         minors = []
         for major, subtrie in self.version_trie.items():
-            minors.extend(
-                unparse_version((major, minor)) for minor in subtrie.keys()
-            )
+            minors.extend(unparse_version((major, minor)) for minor in subtrie.keys())
         return [v for v in minors if self.is_released(v)]
 
     def micro_versions(self):
@@ -129,9 +125,7 @@ class PyVersionInfo:
         micros = []
         for major, subtrie in self.version_trie.items():
             for minor, sublist in subtrie.items():
-                micros.extend(
-                    unparse_version((major, minor, mc)) for mc in sublist
-                )
+                micros.extend(unparse_version((major, minor, mc)) for mc in sublist)
         return [v for v in micros if self.is_released(v)]
 
     def release_date(self, version):
@@ -191,11 +185,11 @@ class PyVersionInfo:
         :raises ValueError: if ``series`` is not a valid minor version string
         """
         try:
-            x, y = map(int, series.split('.'))
+            x, y = map(int, series.split("."))
         except ValueError:
-            raise ValueError('Invalid series name: ' + repr(series))
+            raise ValueError("Invalid series name: " + repr(series))
         try:
-            return self.series_eol_dates[f'{x}.{y}']
+            return self.series_eol_dates[f"{x}.{y}"]
         except KeyError:
             raise UnknownVersionError(series)
 
@@ -245,17 +239,15 @@ class PyVersionInfo:
         try:
             if len(v) == 1:
                 subs = [
-                    unparse_version(v + (y,))
-                    for y in self.version_trie[v[0]].keys()
+                    unparse_version(v + (y,)) for y in self.version_trie[v[0]].keys()
                 ]
             elif len(v) == 2:
                 subs = [
-                    unparse_version(v + (z,))
-                    for z in self.version_trie[v[0]][v[1]]
+                    unparse_version(v + (z,)) for z in self.version_trie[v[0]][v[1]]
                 ]
             elif len(v) == 3:
                 raise ValueError(
-                    'Micro versions do not have subversions: '+repr(version)
+                    "Micro versions do not have subversions: " + repr(version)
                 )
         except KeyError:
             raise UnknownVersionError(version)
@@ -275,7 +267,7 @@ class UnknownVersionError(Exception):
         self.version = version
 
     def __str__(self):
-        return 'Unknown version: ' + repr(self.version)
+        return "Unknown version: " + repr(self.version)
 
 
 def parse_date(s):
@@ -286,7 +278,8 @@ def parse_date(s):
     if s is None or isinstance(s, bool):
         return s
     else:
-        return datetime.strptime(s, '%Y-%m-%d').date()
+        return datetime.strptime(s, "%Y-%m-%d").date()
+
 
 def parse_version(s):
     """
@@ -296,13 +289,14 @@ def parse_version(s):
     :raises ValueError: if ``s`` is not a valid version string
     """
     try:
-        v = tuple(map(int, s.split('.')))
+        v = tuple(map(int, s.split(".")))
     except ValueError:
-        raise ValueError('Invalid version string: ' + repr(s))
+        raise ValueError("Invalid version string: " + repr(s))
     if len(v) < 1 or len(v) > 3:
-        raise ValueError('Invalid version string: ' + repr(s))
+        raise ValueError("Invalid version string: " + repr(s))
     return v
 
+
 def unparse_version(v):
-    """ Convert a sequence of integers to a dot-separated string """
-    return '.'.join(map(str, v))
+    """Convert a sequence of integers to a dot-separated string"""
+    return ".".join(map(str, v))
