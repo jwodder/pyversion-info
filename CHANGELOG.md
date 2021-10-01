@@ -1,5 +1,5 @@
-v0.3.0 (in development)
------------------------
+v0.3.0 (2021-10-01)
+-------------------
 - Add type annotations
 - Switch from appdirs to platformdirs
 
