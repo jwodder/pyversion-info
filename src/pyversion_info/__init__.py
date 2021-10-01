@@ -26,9 +26,9 @@ from datetime import date, datetime
 from enum import Enum
 import sys
 from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple, Union
-from appdirs import user_cache_dir
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
+from platformdirs import user_cache_dir
 import requests
 
 __all__ = [
