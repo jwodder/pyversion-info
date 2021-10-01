@@ -1,3 +1,7 @@
+v0.3.0 (in development)
+-----------------------
+- Add type annotations
+
 v0.2.0 (2020-12-13)
 -------------------
 - Support Python 3.8 and 3.9

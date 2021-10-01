@@ -23,7 +23,9 @@ __url__ = "https://github.com/jwodder/pyversion-info"
 
 from collections import OrderedDict
 from datetime import date, datetime
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from enum import Enum
+import sys
+from typing import TYPE_CHECKING, Dict, Iterable, List, Literal, Optional, Tuple, Union
 from appdirs import user_cache_dir
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
@@ -43,6 +45,21 @@ DATA_URL = (
 
 #: The default directory in which the version release data is cached
 CACHE_DIR = user_cache_dir("pyversion-info", "jwodder")
+
+if TYPE_CHECKING:
+    if sys.version_info[:2] >= (3, 8):
+        from typing import TypedDict
+    else:
+        from typing_extensions import TypedDict
+
+    class PyVersionInfoData(TypedDict):
+        version_release_dates: Dict[str, Optional[str]]
+        series_eol_dates: Dict[str, Union[None, Literal[True], str]]
+
+
+class UndatedEOL(Enum):
+    NOT_EOL = 1
+    IS_EOL = 2
 
 
 def get_pyversion_info(
@@ -69,17 +86,19 @@ def get_pyversion_info(
 class PyVersionInfo:
     """A class for querying Python versions and their release & EOL dates"""
 
-    def __init__(self, data: dict) -> None:
+    def __init__(self, data: "PyVersionInfoData") -> None:
         """
         :param dict data: Version release dates and series EOL dates structured
-            in accordance with the JSON Schema at
-            <https://raw.githubusercontent.com/jwodder/pyversion-info-data/master/pyversion-info-data.schema.json>
+            in accordance with `this JSON Schema`__
+
+        __ https://raw.githubusercontent.com/jwodder/pyversion-info-data/
+           master/pyversion-info-data.schema.json
         """
-        self.version_release_dates: Dict[str, date] = {
-            v: parse_date(d) for v, d in data["version_release_dates"].items()
+        self.version_release_dates: Dict[str, Optional[date]] = {
+            v: parse_release_date(d) for v, d in data["version_release_dates"].items()
         }
-        self.series_eol_dates: Dict[str, date] = {
-            v: parse_date(d) for v, d in data["series_eol_dates"].items()
+        self.series_eol_dates: Dict[str, Union[date, UndatedEOL]] = {
+            v: parse_eol_date(d) for v, d in data["series_eol_dates"].items()
         }
         self.version_trie: Dict[int, Dict[int, List[int]]] = OrderedDict()
         for v in sorted(map(parse_version, self.version_release_dates.keys())):
@@ -112,7 +131,7 @@ class PyVersionInfo:
 
         :rtype: list[str]
         """
-        minors = []
+        minors: List[str] = []
         for major, subtrie in self.version_trie.items():
             minors.extend(unparse_version((major, minor)) for minor in subtrie.keys())
         return [v for v in minors if self.is_released(v)]
@@ -125,7 +144,7 @@ class PyVersionInfo:
 
         :rtype: list[str]
         """
-        micros = []
+        micros: List[str] = []
         for major, subtrie in self.version_trie.items():
             for minor, sublist in subtrie.items():
                 micros.extend(unparse_version((major, minor, mc)) for mc in sublist)
@@ -172,7 +191,7 @@ class PyVersionInfo:
         d = self.release_date(version)
         return d is None or d <= date.today()
 
-    def eol_date(self, series: str) -> Union[None, bool, date]:
+    def eol_date(self, series: str) -> Union[None, Literal[True], date]:
         """
         Returns the end-of-life date of the given Python version series (i.e.,
         a minor version like 3.5).  The return value may be `None`, indicating
@@ -190,9 +209,9 @@ class PyVersionInfo:
         try:
             x, y = map(int, series.split("."))
         except ValueError:
-            raise ValueError("Invalid series name: " + repr(series))
+            raise ValueError(f"Invalid series name: {series!r}")
         try:
-            return self.series_eol_dates[f"{x}.{y}"]
+            return from_eol_date(self.series_eol_dates[f"{x}.{y}"])
         except KeyError:
             raise UnknownVersionError(series)
 
@@ -207,7 +226,7 @@ class PyVersionInfo:
         :raises ValueError: if ``series`` is not a valid minor version string
         """
         d = self.eol_date(series)
-        return d and (d is True or d <= date.today())
+        return d is not None and (d is True or d <= date.today())
 
     def is_supported(self, series: str) -> bool:
         """
@@ -249,9 +268,7 @@ class PyVersionInfo:
                     unparse_version(v + (z,)) for z in self.version_trie[v[0]][v[1]]
                 ]
             elif len(v) == 3:
-                raise ValueError(
-                    "Micro versions do not have subversions: " + repr(version)
-                )
+                raise ValueError(f"Micro versions do not have subversions: {version!r}")
         except KeyError:
             raise UnknownVersionError(version)
         return [s for s in subs if self.is_released(s)]
@@ -284,6 +301,24 @@ def parse_date(s: Union[str, bool, None]) -> Union[date, bool, None]:
         return datetime.strptime(s, "%Y-%m-%d").date()
 
 
+def parse_release_date(s: Union[str, bool, None]) -> Optional[date]:
+    d = parse_date(s)
+    if isinstance(d, date) or d is None:
+        return d
+    else:
+        raise ValueError(f"Invalid release date: {s!r}")
+
+
+def parse_eol_date(s: Union[str, bool, None]) -> Union[date, UndatedEOL]:
+    d = parse_date(s)
+    if isinstance(d, date):
+        return d
+    elif d:
+        return UndatedEOL.IS_EOL
+    else:
+        return UndatedEOL.NOT_EOL
+
+
 def parse_version(s: str) -> Tuple[int, ...]:
     """
     Convert a version string of the form ``X``, ``X.Y``, or ``X.Y.Z`` to a
@@ -294,12 +329,22 @@ def parse_version(s: str) -> Tuple[int, ...]:
     try:
         v = tuple(map(int, s.split(".")))
     except ValueError:
-        raise ValueError("Invalid version string: " + repr(s))
+        raise ValueError(f"Invalid version string: {s!r}")
     if len(v) < 1 or len(v) > 3:
-        raise ValueError("Invalid version string: " + repr(s))
+        raise ValueError(f"Invalid version string: {s!r}")
     return v
 
 
 def unparse_version(v: Iterable[int]) -> str:
     """Convert a sequence of integers to a dot-separated string"""
     return ".".join(map(str, v))
+
+
+def from_eol_date(d: Union[date, UndatedEOL]) -> Union[date, None, Literal[True]]:
+    if isinstance(d, date):
+        return d
+    elif d is UndatedEOL.IS_EOL:
+        return True
+    else:
+        assert d is UndatedEOL.NOT_EOL
+        return None
