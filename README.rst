@@ -93,58 +93,60 @@ All dates are returned as ``datetime.date`` objects.
 -----------------
 A class for querying Python versions and their release & EOL dates
 
-``PyVersionInfo(data)``
+``PyVersionInfo(data: dict)``
    Construct a new ``PyVersionInfo`` object from a `dict` containing version
    release dates and series EOL dates structured in accordance with `this
-   JSON Schema
-   <https://raw.githubusercontent.com/jwodder/pyversion-info-data/master/pyversion-info-data.schema.json>`_
+   JSON Schema`__
 
-``pyvinfo.eol_date(series)``
+   __ https://raw.githubusercontent.com/jwodder/pyversion-info-data/master/
+      pyversion-info-data.schema.json
+
+``pyvinfo.eol_date(series: str) -> Union[date, None, Literal[True]]``
    Returns the end-of-life date of the given Python version series (i.e., a
-   minor version like 3.5).  The return value may be `None`, indicating that
+   minor version like 3.5).  The return value may be ``None``, indicating that
    the series is not yet end-of-life and its end-of-life date is unknown or
-   undetermined.  The return value may alternatively be `True`, indicating that
-   the series has reached end-of-life but the date on which that happened is
-   unknown.
+   undetermined.  The return value may alternatively be ``True``, indicating
+   that the series has reached end-of-life but the date on which that happened
+   is unknown.
 
-``pyvinfo.is_eol(series)``
+``pyvinfo.is_eol(series: str) -> bool``
    Returns whether the given version series has reached end-of-life yet
 
-``pyvinfo.is_released(version)``
+``pyvinfo.is_released(version: str) -> bool``
    Returns whether the given version has been released yet.  For a major or
    minor version, this is the whether the first (in version order) micro
    version has been released.
 
-``pyvinfo.is_supported(series)``
+``pyvinfo.is_supported(series: str) -> bool``
    Returns whether the given version series is currently supported (i.e., has
    at least one release out and is not yet end-of-life)
 
-``pyvinfo.major_versions()``
+``pyvinfo.major_versions() -> List[str]``
    Returns a list in version order of all Python major versions that have ever
    been released
 
-``pyinfo.micro_versions()``
+``pyinfo.micro_versions() -> List[str]``
    Returns a list in version order of all Python micro versions that have ever
    been released.  Versions in the form ``X.Y`` are included here as ``X.Y.0``.
 
-``pyvinfo.minor_versions()``
+``pyvinfo.minor_versions() -> List[str]``
    Returns a list in version order of all Python minor versions that have ever
    been released
 
-``pyvinfo.release_date(version)``
+``pyvinfo.release_date(version: str) -> Optional[date]``
    Returns the release date of the given Python version.  For a major or minor
    version, this is the release date of its first (in version order) micro
-   version.  The return value may be `None`, indicating that, though the
+   version.  The return value may be ``None``, indicating that, though the
    version has been released and is known to the database, its release date is
    unknown.
 
-``pyvinfo.subversions(version)``
+``pyvinfo.subversions(version: str) -> List[str]``
    Returns a list in version order of all released subversions of the given
    version.  If ``version`` is a major version, this is all of its released
    minor versions.  If ``version`` is a minor version, this is all of its
    released micro versions.
 
-``pyvinfo.supported_series()``
+``pyvinfo.supported_series() -> List[str]``
    Returns a list in version order of all Python version series (i.e., minor
    versions like 3.5) that are currently supported (i.e., that have at least
    one released made and are not yet end-of-life)
@@ -162,11 +164,11 @@ Utilities
    The unknown version is stored in an ``UnknownVersionError`` instance's
    ``version`` attribute.
 
-``get_pyversion_info(url=pyversion_info.DATA_URL, cache_dir=pyversion_info.CACHE_DIR)``
+``get_pyversion_info(url: str = pyversion_info.DATA_URL, cache_dir: Optional[str] = pyversion_info.CACHE_DIR) -> PyVersionInfo``
     Fetches the latest version release data from ``url`` and returns a new
     ``PyVersionInfo`` object.  The HTTP response is cached in ``cache_dir`` to
-    speed up future requests (or ``cache_dir`` can be set to `None` to disable
-    caching).
+    speed up future requests (or ``cache_dir`` can be set to ``None`` to
+    disable caching).
 
 
 Restrictions

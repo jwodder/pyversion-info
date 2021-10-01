@@ -65,7 +65,7 @@ class UndatedEOL(Enum):
 
 
 def get_pyversion_info(
-    url: str = DATA_URL, cache_dir: str = CACHE_DIR
+    url: str = DATA_URL, cache_dir: Optional[str] = CACHE_DIR
 ) -> "PyVersionInfo":
     """
     Fetches the latest version release data from ``url`` and returns a new
