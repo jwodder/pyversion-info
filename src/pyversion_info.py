@@ -15,7 +15,7 @@ a bus.
 Visit <https://github.com/jwodder/pyversion-info> for more information.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0.dev1"
 __author__ = "John Thorvald Wodder II"
 __author_email__ = "pyversion-info@varonathe.org"
 __license__ = "MIT"
@@ -23,6 +23,7 @@ __url__ = "https://github.com/jwodder/pyversion-info"
 
 from collections import OrderedDict
 from datetime import date, datetime
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 from appdirs import user_cache_dir
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
@@ -44,7 +45,9 @@ DATA_URL = (
 CACHE_DIR = user_cache_dir("pyversion-info", "jwodder")
 
 
-def get_pyversion_info(url=DATA_URL, cache_dir=CACHE_DIR):
+def get_pyversion_info(
+    url: str = DATA_URL, cache_dir: str = CACHE_DIR
+) -> "PyVersionInfo":
     """
     Fetches the latest version release data from ``url`` and returns a new
     `PyVersionInfo` object
@@ -66,24 +69,24 @@ def get_pyversion_info(url=DATA_URL, cache_dir=CACHE_DIR):
 class PyVersionInfo:
     """A class for querying Python versions and their release & EOL dates"""
 
-    def __init__(self, data):
+    def __init__(self, data: dict) -> None:
         """
         :param dict data: Version release dates and series EOL dates structured
             in accordance with the JSON Schema at
             <https://raw.githubusercontent.com/jwodder/pyversion-info-data/master/pyversion-info-data.schema.json>
         """
-        self.version_release_dates = {
+        self.version_release_dates: Dict[str, date] = {
             v: parse_date(d) for v, d in data["version_release_dates"].items()
         }
-        self.series_eol_dates = {
+        self.series_eol_dates: Dict[str, date] = {
             v: parse_date(d) for v, d in data["series_eol_dates"].items()
         }
-        self.version_trie = OrderedDict()
+        self.version_trie: Dict[int, Dict[int, List[int]]] = OrderedDict()
         for v in sorted(map(parse_version, self.version_release_dates.keys())):
             x, y, z = v
             self.version_trie.setdefault(x, OrderedDict()).setdefault(y, []).append(z)
 
-    def supported_series(self):
+    def supported_series(self) -> List[str]:
         """
         Returns a list in version order of all Python version series (i.e.,
         minor versions like 3.5) that are currently supported (i.e., that have
@@ -93,7 +96,7 @@ class PyVersionInfo:
         """
         return [v for v in self.minor_versions() if self.is_supported(v)]
 
-    def major_versions(self):
+    def major_versions(self) -> List[str]:
         """
         Returns a list in version order of all Python major versions (as
         strings) that have ever been released
@@ -102,7 +105,7 @@ class PyVersionInfo:
         """
         return [str(v) for v in self.version_trie.keys() if self.is_released(str(v))]
 
-    def minor_versions(self):
+    def minor_versions(self) -> List[str]:
         """
         Returns a list in version order of all Python minor versions that have
         ever been released
@@ -114,7 +117,7 @@ class PyVersionInfo:
             minors.extend(unparse_version((major, minor)) for minor in subtrie.keys())
         return [v for v in minors if self.is_released(v)]
 
-    def micro_versions(self):
+    def micro_versions(self) -> List[str]:
         """
         Returns a list in version order of all Python micro versions that have
         ever been released.  Versions in the form ``X.Y`` are included here as
@@ -128,7 +131,7 @@ class PyVersionInfo:
                 micros.extend(unparse_version((major, minor, mc)) for mc in sublist)
         return [v for v in micros if self.is_released(v)]
 
-    def release_date(self, version):
+    def release_date(self, version: str) -> Optional[date]:
         """
         Returns the release date of the given Python version.  For a major or
         minor version, this is the release date of its first (in version order)
@@ -154,7 +157,7 @@ class PyVersionInfo:
         except KeyError:
             raise UnknownVersionError(version)
 
-    def is_released(self, version):
+    def is_released(self, version: str) -> bool:
         """
         Returns whether the given version has been released yet.  For a major
         or minor version, this is the whether the first (in version order)
@@ -169,7 +172,7 @@ class PyVersionInfo:
         d = self.release_date(version)
         return d is None or d <= date.today()
 
-    def eol_date(self, series):
+    def eol_date(self, series: str) -> Union[None, bool, date]:
         """
         Returns the end-of-life date of the given Python version series (i.e.,
         a minor version like 3.5).  The return value may be `None`, indicating
@@ -193,7 +196,7 @@ class PyVersionInfo:
         except KeyError:
             raise UnknownVersionError(series)
 
-    def is_eol(self, series):
+    def is_eol(self, series: str) -> bool:
         """
         Returns whether the given version series has reached end-of-life yet
 
@@ -206,7 +209,7 @@ class PyVersionInfo:
         d = self.eol_date(series)
         return d and (d is True or d <= date.today())
 
-    def is_supported(self, series):
+    def is_supported(self, series: str) -> bool:
         """
         Returns whether the given version series is currently supported (i.e.,
         has at least one release out and is not yet end-of-life)
@@ -221,7 +224,7 @@ class PyVersionInfo:
         # invalid series
         return (not self.is_eol(series)) and self.is_released(series)
 
-    def subversions(self, version):
+    def subversions(self, version: str) -> List[str]:
         """
         Returns a list in version order of all released subversions of the
         given version.  If ``version`` is a major version, this is all of its
@@ -262,15 +265,15 @@ class UnknownVersionError(Exception):
     announced & released.
     """
 
-    def __init__(self, version):
+    def __init__(self, version: str) -> None:
         #: The unknown version the caller asked about
         self.version = version
 
-    def __str__(self):
-        return "Unknown version: " + repr(self.version)
+    def __str__(self) -> str:
+        return f"Unknown version: {self.version!r}"
 
 
-def parse_date(s):
+def parse_date(s: Union[str, bool, None]) -> Union[date, bool, None]:
     """
     Convert a string of the form ``YYYY-MM-DD`` into a `datetime.date` object.
     `None` values and booleans are passed through unaltered.
@@ -281,7 +284,7 @@ def parse_date(s):
         return datetime.strptime(s, "%Y-%m-%d").date()
 
 
-def parse_version(s):
+def parse_version(s: str) -> Tuple[int, ...]:
     """
     Convert a version string of the form ``X``, ``X.Y``, or ``X.Y.Z`` to a
     tuple of integers
@@ -297,6 +300,6 @@ def parse_version(s):
     return v
 
 
-def unparse_version(v):
+def unparse_version(v: Iterable[int]) -> str:
     """Convert a sequence of integers to a dot-separated string"""
     return ".".join(map(str, v))
