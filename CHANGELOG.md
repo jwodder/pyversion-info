@@ -1,5 +1,7 @@
 v0.4.0 (in development)
 -----------------------
+- `subversions()` now takes an optional `unreleased` argument for including
+  unreleased versions
 - `is_supported()` now accepts major and patch versions
 
 v0.3.0 (2021-10-01)

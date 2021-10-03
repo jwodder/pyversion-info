@@ -253,17 +253,21 @@ class PyVersionInfo:
                 version
             )
 
-    def subversions(self, version: str) -> List[str]:
+    def subversions(self, version: str, unreleased: bool = False) -> List[str]:
         """
-        Returns a list in version order of all released subversions of the
-        given version.  If ``version`` is a major version, this is all of its
+        Returns a list in version order of all subversions of the given
+        version.  If ``version`` is a major version, this is all of its
         released minor versions.  If ``version`` is a minor version, this is
         all of its released micro versions.
 
+        If ``unreleased`` is true (default: `False`), the list includes
+        unreleased subversions.  Otherwise, they are omitted.
+
         :param str version: a Python major or minor version
+        :param bool unreleased: whether to include unreleased subversions
         :rtype: list[str]
-        :raises UnknownVersionError: if there is no micro version corresponding
-            to ``version`` in the database
+        :raises UnknownVersionError: if there is no entry for ``version`` in
+            the database
         :raises ValueError: if ``version`` is not a valid major or minor
             version string
         """
@@ -281,7 +285,10 @@ class PyVersionInfo:
                 raise ValueError(f"Micro versions do not have subversions: {version!r}")
         except KeyError:
             raise UnknownVersionError(version)
-        return [s for s in subs if self.is_released(s)]
+        if unreleased:
+            return subs
+        else:
+            return list(filter(self.is_released, subs))
 
 
 class UnknownVersionError(Exception):

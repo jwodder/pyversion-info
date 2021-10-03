@@ -142,11 +142,14 @@ A class for querying Python versions and their release & EOL dates
    version has been released and is known to the database, its release date is
    unknown.
 
-``pyvinfo.subversions(version: str) -> List[str]``
-   Returns a list in version order of all released subversions of the given
-   version.  If ``version`` is a major version, this is all of its released
-   minor versions.  If ``version`` is a minor version, this is all of its
-   released micro versions.
+``pyvinfo.subversions(version: str, unreleased: bool = False) -> List[str]``
+   Returns a list in version order of all subversions of the given version.  If
+   ``version`` is a major version, this is all of its released minor versions.
+   If ``version`` is a minor version, this is all of its released micro
+   versions.
+
+   If ``unreleased`` is true (default: ``False``), the list includes unreleased
+   subversions.  Otherwise, they are omitted.
 
 ``pyvinfo.supported_series() -> List[str]``
    Returns a list in version order of all Python version series (i.e., minor
