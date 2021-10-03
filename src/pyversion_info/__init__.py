@@ -56,7 +56,7 @@ if TYPE_CHECKING:
 
     class PyVersionInfoData(TypedDict):
         version_release_dates: Dict[str, Optional[str]]
-        series_eol_dates: Dict[str, Union[None, "TRUE", str]]
+        series_eol_dates: Dict[str, Union[None, TRUE, str]]
 
 
 class UndatedEOL(Enum):
@@ -219,7 +219,7 @@ class PyVersionInfo:
         d = self.release_date(version)
         return d is None or d <= date.today()
 
-    def eol_date(self, series: str) -> Union[None, "TRUE", date]:
+    def eol_date(self, series: str) -> "Union[None, TRUE, date]":
         """
         Returns the end-of-life date of the given Python version series (i.e.,
         a minor version like 3.5).  The return value may be `None`, indicating
@@ -389,7 +389,7 @@ def unparse_version(v: Iterable[int]) -> str:
     return ".".join(map(str, v))
 
 
-def from_eol_date(d: Union[date, UndatedEOL]) -> Union[date, None, "TRUE"]:
+def from_eol_date(d: Union[date, UndatedEOL]) -> "Union[date, None, TRUE]":
     if isinstance(d, date):
         return d
     elif d is UndatedEOL.IS_EOL:
