@@ -3,7 +3,7 @@ v0.4.0 (in development)
 - `major_versions()`, `minor_versions()`, `micro_versions()`, and
   `subversions()` now take optional `unreleased` arguments for including
   unreleased versions
-- `is_supported()` now accepts major and patch versions
+- `is_supported()` now accepts major and micro versions
 
 v0.3.0 (2021-10-01)
 -------------------

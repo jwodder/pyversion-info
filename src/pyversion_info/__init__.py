@@ -123,6 +123,9 @@ class PyVersionInfo:
         strings).  If ``unreleased`` is true (default: `False`), the list
         includes unreleased versions; otherwise, they are omitted.
 
+        .. versionchanged:: 0.4.0
+            ``unreleased`` argument added
+
         :param bool unreleased: whether to include unreleased versions
         :rtype: list[str]
         """
@@ -137,6 +140,9 @@ class PyVersionInfo:
         Returns a list in version order of all Python minor versions.  If
         ``unreleased`` is true (default: `False`), the list includes unreleased
         versions; otherwise, they are omitted.
+
+        .. versionchanged:: 0.4.0
+            ``unreleased`` argument added
 
         :param bool unreleased: whether to include unreleased versions
         :rtype: list[str]
@@ -156,6 +162,9 @@ class PyVersionInfo:
 
         If ``unreleased`` is true (default: `False`), the list includes
         unreleased versions; otherwise, they are omitted.
+
+        .. versionchanged:: 0.4.0
+            ``unreleased`` argument added
 
         :param bool unreleased: whether to include unreleased versions
         :rtype: list[str]
@@ -254,6 +263,9 @@ class PyVersionInfo:
         minor version is not yet end-of-life.  For a major or minor version,
         this is whether at least one subversion is supported.
 
+        .. versionchanged:: 0.4.0
+            Major and micro versions now accepted
+
         :param str version: the version to query the support status of
         :rtype: bool
         :raises UnknownVersionError: if there is no entry for ``version`` in
@@ -279,6 +291,9 @@ class PyVersionInfo:
 
         If ``unreleased`` is true (default: `False`), the list includes
         unreleased subversions.  Otherwise, they are omitted.
+
+        .. versionchanged:: 0.4.0
+            ``unreleased`` argument added
 
         :param str version: a Python major or minor version
         :param bool unreleased: whether to include unreleased subversions
