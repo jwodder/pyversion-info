@@ -1,5 +1,5 @@
-v0.4.0 (in development)
------------------------
+v0.4.0 (2021-10-03)
+-------------------
 - `major_versions()`, `minor_versions()`, `micro_versions()`, and
   `subversions()` now take optional `unreleased` arguments for including
   unreleased versions
