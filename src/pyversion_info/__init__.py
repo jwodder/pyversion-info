@@ -15,7 +15,7 @@ a bus.
 Visit <https://github.com/jwodder/pyversion-info> for more information.
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0.dev1"
 __author__ = "John Thorvald Wodder II"
 __author_email__ = "pyversion-info@varonathe.org"
 __license__ = "MIT"
@@ -230,20 +230,28 @@ class PyVersionInfo:
         d = self.eol_date(series)
         return d is not None and (d is True or d <= date.today())
 
-    def is_supported(self, series: str) -> bool:
+    def is_supported(self, version: str) -> bool:
         """
-        Returns whether the given version series is currently supported (i.e.,
-        has at least one release out and is not yet end-of-life)
+        Returns whether the given version is currently supported.  For a patch
+        version, this is whether it has been released and the corresponding
+        minor version is not yet end-of-life.  For a major or minor version,
+        this is whether at least one subversion is supported.
 
-        :param str series: a Python version series/minor version number
+        :param str version: the version to query the support status of
         :rtype: bool
-        :raises UnknownVersionError: if there is no entry for ``series`` in the
-            end-of-life table
-        :raises ValueError: if ``series`` is not a valid minor version string
+        :raises UnknownVersionError: if there is no entry for ``version`` in
+            the database
         """
-        # Test is_eol() first so that invalid versions will be reported as
-        # invalid series
-        return (not self.is_eol(series)) and self.is_released(series)
+        v = parse_version(version)
+        if len(v) == 1:
+            return any(map(lambda u: not self.is_eol(u), self.subversions(version)))
+        elif len(v) == 2:
+            return (not self.is_eol(version)) and bool(self.subversions(version))
+        else:
+            x, y, _ = v
+            return (not self.is_eol(unparse_version((x, y)))) and self.is_released(
+                version
+            )
 
     def subversions(self, version: str) -> List[str]:
         """

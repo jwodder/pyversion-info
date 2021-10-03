@@ -117,9 +117,11 @@ A class for querying Python versions and their release & EOL dates
    minor version, this is the whether the first (in version order) micro
    version has been released.
 
-``pyvinfo.is_supported(series: str) -> bool``
-   Returns whether the given version series is currently supported (i.e., has
-   at least one release out and is not yet end-of-life)
+``pyvinfo.is_supported(version: str) -> bool``
+   Returns whether the given version is currently supported.  For a patch
+   version, this is whether it has been released and the corresponding minor
+   version is not yet end-of-life.  For a major or minor version, this is
+   whether at least one subversion is supported.
 
 ``pyvinfo.major_versions() -> List[str]``
    Returns a list in version order of all Python major versions that have ever

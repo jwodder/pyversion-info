@@ -699,7 +699,9 @@ def test_is_eol_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
 @pytest.mark.parametrize(
     "series,is_supported",
     [
+        ("0", False),
         ("0.9", False),
+        ("1", False),
         ("1.0", False),
         ("1.1", False),
         ("1.2", False),
@@ -707,16 +709,22 @@ def test_is_eol_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
         ("1.4", False),
         ("1.5", False),
         ("1.6", False),
+        ("2", True),
         ("2.0", False),
         ("2.1", False),
         ("2.2", False),
         ("2.3", False),
         ("2.4", False),
         ("2.5", False),
+        ("2.5.7", False),
         ("2.6", False),
         ("2.7", True),
+        ("2.7.1", True),
+        ("3", True),
         ("3.0", False),
+        ("3.0.0", False),
         ("3.1", False),
+        ("3.1.0", False),
         ("3.2", False),
         ("3.3", False),
         ("3.4", False),
@@ -730,13 +738,11 @@ def test_is_supported(pyvinfo: PyVersionInfo, series: str, is_supported: bool) -
     assert pyvinfo.is_supported(series) is is_supported
 
 
-@pytest.mark.parametrize(
-    "v", INVALID_VERSIONS + ["2.5.7", "3", "3.0.0", "3.0.1", "3.9.0", "4"]
-)
+@pytest.mark.parametrize("v", INVALID_VERSIONS)
 def test_is_supported_invalid(pyvinfo: PyVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.is_supported(v)
-    assert str(excinfo.value) == f"Invalid series name: {v!r}"
+    assert str(excinfo.value) == f"Invalid version string: {v!r}"
 
 
 @pytest.mark.parametrize("v", ["0.8", "3.9"])
