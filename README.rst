@@ -270,7 +270,7 @@ Options
 
 -J, --json                      Output JSON
 
--S, --subversions [all|not-eol|released|supported]
+-S, --subversions <all|not-eol|released|supported>
                                 Which subversions to list; the choices have the
                                 same meanings as the ``list`` options of the
                                 same name  [default: released]
