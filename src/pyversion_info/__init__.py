@@ -111,7 +111,7 @@ class PyVersionInfo:
         """
         Returns a list in version order of all Python version series (i.e.,
         minor versions like 3.5) that are currently supported (i.e., that have
-        at least one released made and are not yet end-of-life)
+        at least one release made and are not yet end-of-life)
 
         :rtype: list[str]
         """

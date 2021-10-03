@@ -159,7 +159,7 @@ A class for querying Python versions and their release & EOL dates
 ``pyvinfo.supported_series() -> List[str]``
    Returns a list in version order of all Python version series (i.e., minor
    versions like 3.5) that are currently supported (i.e., that have at least
-   one released made and are not yet end-of-life)
+   one release made and are not yet end-of-life)
 
 
 Utilities
