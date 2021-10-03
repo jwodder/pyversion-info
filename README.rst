@@ -118,22 +118,27 @@ A class for querying Python versions and their release & EOL dates
    version has been released.
 
 ``pyvinfo.is_supported(version: str) -> bool``
-   Returns whether the given version is currently supported.  For a patch
+   Returns whether the given version is currently supported.  For a micro
    version, this is whether it has been released and the corresponding minor
    version is not yet end-of-life.  For a major or minor version, this is
    whether at least one subversion is supported.
 
-``pyvinfo.major_versions() -> List[str]``
-   Returns a list in version order of all Python major versions that have ever
-   been released
+``pyvinfo.major_versions(unreleased: bool = False) -> List[str]``
+   Returns a list in version order of all Python major versions (as strings).
+   If ``unreleased`` is true (default: ``False``), the list includes unreleased
+   versions; otherwise, they are omitted.
 
-``pyinfo.micro_versions() -> List[str]``
-   Returns a list in version order of all Python micro versions that have ever
-   been released.  Versions in the form ``X.Y`` are included here as ``X.Y.0``.
+``pyinfo.micro_versions(unreleased: bool = False) -> List[str]``
+   Returns a list in version order of all Python micro versions Versions in the
+   form ``X.Y`` are included here as ``X.Y.0``.
 
-``pyvinfo.minor_versions() -> List[str]``
-   Returns a list in version order of all Python minor versions that have ever
-   been released
+   If ``unreleased`` is true (default: ``False``), the list includes unreleased
+   versions; otherwise, they are omitted.
+
+``pyvinfo.minor_versions(unreleased: bool = False) -> List[str]``
+   Returns a list in version order of all Python minor versions.  If
+   ``unreleased`` is true (default: ``False``), the list includes unreleased
+   versions; otherwise, they are omitted.
 
 ``pyvinfo.release_date(version: str) -> Optional[date]``
    Returns the release date of the given Python version.  For a major or minor

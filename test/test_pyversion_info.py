@@ -35,6 +35,10 @@ def test_major_versions(pyvinfo: PyVersionInfo) -> None:
     assert pyvinfo.major_versions() == ["0", "1", "2", "3"]
 
 
+def test_major_versions_unreleased(pyvinfo: PyVersionInfo) -> None:
+    assert pyvinfo.major_versions(unreleased=True) == ["0", "1", "2", "3", "4"]
+
+
 def test_minor_versions(pyvinfo: PyVersionInfo) -> None:
     assert pyvinfo.minor_versions() == [
         "0.9",
@@ -61,6 +65,37 @@ def test_minor_versions(pyvinfo: PyVersionInfo) -> None:
         "3.5",
         "3.6",
         "3.7",
+    ]
+
+
+def test_minor_versions_unreleased(pyvinfo: PyVersionInfo) -> None:
+    assert pyvinfo.minor_versions(unreleased=True) == [
+        "0.9",
+        "1.0",
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.6",
+        "2.0",
+        "2.1",
+        "2.2",
+        "2.3",
+        "2.4",
+        "2.5",
+        "2.6",
+        "2.7",
+        "3.0",
+        "3.1",
+        "3.2",
+        "3.3",
+        "3.4",
+        "3.5",
+        "3.6",
+        "3.7",
+        "3.8",
+        "4.0",
     ]
 
 
@@ -203,6 +238,153 @@ def test_micro_versions(pyvinfo: PyVersionInfo) -> None:
         "3.7.1",
         "3.7.2",
         "3.7.3",
+    ]
+
+
+def test_micro_versions_unreleased(pyvinfo: PyVersionInfo) -> None:
+    assert pyvinfo.micro_versions(unreleased=True) == [
+        "0.9.0",
+        "0.9.1",
+        "0.9.2",
+        "0.9.4",
+        "0.9.5",
+        "0.9.6",
+        "0.9.8",
+        "0.9.9",
+        "1.0.0",
+        "1.0.1",
+        "1.0.2",
+        "1.0.3",
+        "1.0.4",
+        "1.1.0",
+        "1.1.1",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.5.1",
+        "1.5.2",
+        "1.6.0",
+        "1.6.1",
+        "2.0.0",
+        "2.0.1",
+        "2.1.0",
+        "2.1.1",
+        "2.1.2",
+        "2.1.3",
+        "2.2.0",
+        "2.2.1",
+        "2.2.2",
+        "2.2.3",
+        "2.3.0",
+        "2.3.1",
+        "2.3.2",
+        "2.3.3",
+        "2.3.4",
+        "2.3.5",
+        "2.3.6",
+        "2.3.7",
+        "2.4.0",
+        "2.4.1",
+        "2.4.2",
+        "2.4.3",
+        "2.4.4",
+        "2.4.5",
+        "2.4.6",
+        "2.5.0",
+        "2.5.1",
+        "2.5.2",
+        "2.5.3",
+        "2.5.4",
+        "2.5.5",
+        "2.5.6",
+        "2.6.0",
+        "2.6.1",
+        "2.6.2",
+        "2.6.3",
+        "2.6.4",
+        "2.6.5",
+        "2.6.6",
+        "2.6.7",
+        "2.6.8",
+        "2.6.9",
+        "2.7.0",
+        "2.7.1",
+        "2.7.2",
+        "2.7.3",
+        "2.7.4",
+        "2.7.5",
+        "2.7.6",
+        "2.7.7",
+        "2.7.8",
+        "2.7.9",
+        "2.7.10",
+        "2.7.11",
+        "2.7.12",
+        "2.7.13",
+        "2.7.14",
+        "2.7.15",
+        "2.7.16",
+        "2.7.17",
+        "2.7.18",
+        "3.0.0",
+        "3.0.1",
+        "3.1.0",
+        "3.1.1",
+        "3.1.2",
+        "3.1.3",
+        "3.1.4",
+        "3.1.5",
+        "3.2.0",
+        "3.2.1",
+        "3.2.2",
+        "3.2.3",
+        "3.2.4",
+        "3.2.5",
+        "3.2.6",
+        "3.3.0",
+        "3.3.1",
+        "3.3.2",
+        "3.3.3",
+        "3.3.4",
+        "3.3.5",
+        "3.3.6",
+        "3.3.7",
+        "3.4.0",
+        "3.4.1",
+        "3.4.2",
+        "3.4.3",
+        "3.4.4",
+        "3.4.5",
+        "3.4.6",
+        "3.4.7",
+        "3.4.8",
+        "3.4.9",
+        "3.4.10",
+        "3.5.0",
+        "3.5.1",
+        "3.5.2",
+        "3.5.3",
+        "3.5.4",
+        "3.5.5",
+        "3.5.6",
+        "3.5.7",
+        "3.6.0",
+        "3.6.1",
+        "3.6.2",
+        "3.6.3",
+        "3.6.4",
+        "3.6.5",
+        "3.6.6",
+        "3.6.7",
+        "3.6.8",
+        "3.7.0",
+        "3.7.1",
+        "3.7.2",
+        "3.7.3",
+        "3.7.4",
+        "3.8.0",
+        "4.0.0",
     ]
 
 
@@ -392,7 +574,7 @@ def test_release_date_invalid(pyvinfo: PyVersionInfo, v: str) -> None:
     assert str(excinfo.value) == f"Invalid version string: {v!r}"
 
 
-@pytest.mark.parametrize("v", ["0.8", "2.5.7", "3.9", "3.9.0", "4"])
+@pytest.mark.parametrize("v", ["0.8", "2.5.7", "3.9", "3.9.0", "5"])
 def test_release_date_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.release_date(v)
@@ -586,7 +768,7 @@ def test_is_released_invalid(pyvinfo: PyVersionInfo, v: str) -> None:
     assert str(excinfo.value) == f"Invalid version string: {v!r}"
 
 
-@pytest.mark.parametrize("v", ["0.8", "2.5.7", "3.9", "3.9.0", "4"])
+@pytest.mark.parametrize("v", ["0.8", "2.5.7", "3.9", "3.9.0", "5"])
 def test_is_released_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.is_released(v)
@@ -629,7 +811,7 @@ def test_eol_date(pyvinfo: PyVersionInfo, series: str, eol: date) -> None:
 
 
 @pytest.mark.parametrize(
-    "v", INVALID_VERSIONS + ["2.5.7", "3", "3.0.0", "3.0.1", "3.9.0", "4"]
+    "v", INVALID_VERSIONS + ["2.5.7", "3", "3.0.0", "3.0.1", "3.9.0", "5"]
 )
 def test_eol_date_invalid(pyvinfo: PyVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
@@ -680,7 +862,7 @@ def test_is_eol(pyvinfo: PyVersionInfo, series: str, is_eol: bool) -> None:
 
 
 @pytest.mark.parametrize(
-    "v", INVALID_VERSIONS + ["2.5.7", "3", "3.0.0", "3.0.1", "3.9.0", "4"]
+    "v", INVALID_VERSIONS + ["2.5.7", "3", "3.0.0", "3.0.1", "3.9.0", "5"]
 )
 def test_is_eol_invalid(pyvinfo: PyVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
@@ -1001,7 +1183,7 @@ def test_subversions_invalid_micro(
     assert str(excinfo.value) == f"Micro versions do not have subversions: {v!r}"
 
 
-@pytest.mark.parametrize("v", ["0.8", "3.9", "4"])
+@pytest.mark.parametrize("v", ["0.8", "3.9", "5"])
 @pytest.mark.parametrize("unreleased", [False, True])
 def test_subversions_unknown(pyvinfo: PyVersionInfo, v: str, unreleased: bool) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:

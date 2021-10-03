@@ -1,6 +1,7 @@
 v0.4.0 (in development)
 -----------------------
-- `subversions()` now takes an optional `unreleased` argument for including
+- `major_versions()`, `minor_versions()`, `micro_versions()`, and
+  `subversions()` now take optional `unreleased` arguments for including
   unreleased versions
 - `is_supported()` now accepts major and patch versions
 

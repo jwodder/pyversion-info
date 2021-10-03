@@ -115,42 +115,59 @@ class PyVersionInfo:
 
         :rtype: list[str]
         """
-        return [v for v in self.minor_versions() if self.is_supported(v)]
+        return [v for v in self.minor_versions() if not self.is_eol(v)]
 
-    def major_versions(self) -> List[str]:
+    def major_versions(self, unreleased: bool = False) -> List[str]:
         """
         Returns a list in version order of all Python major versions (as
-        strings) that have ever been released
+        strings).  If ``unreleased`` is true (default: `False`), the list
+        includes unreleased versions; otherwise, they are omitted.
 
+        :param bool unreleased: whether to include unreleased versions
         :rtype: list[str]
         """
-        return [str(v) for v in self.version_trie.keys() if self.is_released(str(v))]
+        return [
+            str(v)
+            for v in self.version_trie.keys()
+            if unreleased or self.is_released(str(v))
+        ]
 
-    def minor_versions(self) -> List[str]:
+    def minor_versions(self, unreleased: bool = False) -> List[str]:
         """
-        Returns a list in version order of all Python minor versions that have
-        ever been released
+        Returns a list in version order of all Python minor versions.  If
+        ``unreleased`` is true (default: `False`), the list includes unreleased
+        versions; otherwise, they are omitted.
 
+        :param bool unreleased: whether to include unreleased versions
         :rtype: list[str]
         """
         minors: List[str] = []
         for major, subtrie in self.version_trie.items():
             minors.extend(unparse_version((major, minor)) for minor in subtrie.keys())
-        return [v for v in minors if self.is_released(v)]
+        if unreleased:
+            return minors
+        else:
+            return list(filter(self.is_released, minors))
 
-    def micro_versions(self) -> List[str]:
+    def micro_versions(self, unreleased: bool = False) -> List[str]:
         """
-        Returns a list in version order of all Python micro versions that have
-        ever been released.  Versions in the form ``X.Y`` are included here as
-        ``X.Y.0``.
+        Returns a list in version order of all Python micro versions
+        Versions in the form ``X.Y`` are included here as ``X.Y.0``.
 
+        If ``unreleased`` is true (default: `False`), the list includes
+        unreleased versions; otherwise, they are omitted.
+
+        :param bool unreleased: whether to include unreleased versions
         :rtype: list[str]
         """
         micros: List[str] = []
         for major, subtrie in self.version_trie.items():
             for minor, sublist in subtrie.items():
                 micros.extend(unparse_version((major, minor, mc)) for mc in sublist)
-        return [v for v in micros if self.is_released(v)]
+        if unreleased:
+            return micros
+        else:
+            return list(filter(self.is_released, micros))
 
     def release_date(self, version: str) -> Optional[date]:
         """
@@ -232,7 +249,7 @@ class PyVersionInfo:
 
     def is_supported(self, version: str) -> bool:
         """
-        Returns whether the given version is currently supported.  For a patch
+        Returns whether the given version is currently supported.  For a micro
         version, this is whether it has been released and the corresponding
         minor version is not yet end-of-life.  For a major or minor version,
         this is whether at least one subversion is supported.
