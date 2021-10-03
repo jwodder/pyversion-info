@@ -4,6 +4,8 @@ v0.4.0 (in development)
   `subversions()` now take optional `unreleased` arguments for including
   unreleased versions
 - `is_supported()` now accepts major and micro versions
+- `UnknownVersionError` now inherits `ValueError`
+- Added a command-line interface
 
 v0.3.0 (2021-10-01)
 -------------------

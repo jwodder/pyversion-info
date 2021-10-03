@@ -273,7 +273,7 @@ class PyVersionInfo:
         """
         v = parse_version(version)
         if len(v) == 1:
-            return any(map(lambda u: not self.is_eol(u), self.subversions(version)))
+            return not all(map(self.is_eol, self.subversions(version)))
         elif len(v) == 2:
             return (not self.is_eol(version)) and bool(self.subversions(version))
         else:
@@ -323,12 +323,12 @@ class PyVersionInfo:
             return list(filter(self.is_released, subs))
 
 
-class UnknownVersionError(Exception):
+class UnknownVersionError(ValueError):
     """
-    Exception raised when `PyVersionInfo` is asked for information about a
-    version that does not appear in its database.  Operations that result in an
-    `UnknownVersionError` may succeed later as more Python versions are
-    announced & released.
+    Subclass of `ValueError` raised when `PyVersionInfo` is asked for
+    information about a version that does not appear in its database.
+    Operations that result in an `UnknownVersionError` may succeed later as
+    more Python versions are announced & released.
     """
 
     def __init__(self, version: str) -> None:

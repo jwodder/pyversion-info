@@ -166,10 +166,10 @@ Utilities
 ---------
 
 ``UnknownVersionError``
-   Exception raised when ``PyVersionInfo`` is asked for information about a
-   version that does not appear in its database.  Operations that result in an
-   ``UnknownVersionError`` may succeed later as more Python versions are
-   announced & released.
+   Subclass of ``ValueError`` raised when ``PyVersionInfo`` is asked for
+   information about a version that does not appear in its database.
+   Operations that result in an ``UnknownVersionError`` may succeed later as
+   more Python versions are announced & released.
 
    The unknown version is stored in an ``UnknownVersionError`` instance's
    ``version`` attribute.
@@ -181,8 +181,103 @@ Utilities
     disable caching).
 
 
-Restrictions
-============
+Command
+=======
+
+*New in version 0.4.0*
+
+``pyversion-info`` also provides a command of the same name for querying
+information about Python versions from the command line::
+
+    pyversion-info [<global-options>] <command> [<args> ...]
+
+Currently, ``pyversion-info`` has two subcommands, ``list`` and ``show``.
+
+
+Global Options
+--------------
+
+-d DATABASE, --database DATABASE
+                                Use the given JSON file as the version
+                                information database instead of fetching data
+                                from the default URL.  ``DATABASE`` can be
+                                either an HTTP or HTTPS URL or a path to a
+                                local file.
+
+
+``pyversion-info list``
+-----------------------
+
+::
+
+    pyversion-info [<global-options>] list [<options>] {major|minor|micro}
+
+List all major, minor, or micro Python versions, one per line.
+
+
+Options
+^^^^^^^
+
+-a, --all                       List all known versions of the given level
+-n, --not-eol                   Only list versions that have not yet reached
+                                end-of-life (i.e., all supported versions plus
+                                all unreleased versions)
+-r, --released                  Only list released versions.  This is the
+                                default.
+-s, --supported                 Only list currently-supported versions
+
+
+``pyversion-info show``
+-----------------------
+
+::
+
+    pyversion-info [<global-options>] show [<options>] <version>
+
+Show various information about a given Python version.
+
+For a major version, the output is of the form::
+
+    Version: 3
+    Level: major
+    Release-date: 2008-12-03
+    Is-released: yes
+    Is-supported: yes
+    Subversions: 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9
+
+For a minor version, the output is of the form::
+
+    Version: 3.3
+    Level: minor
+    Release-date: 2012-09-29
+    Is-released: yes
+    Is-supported: no
+    EOL-date: 2017-09-29
+    Is-EOL: yes
+    Subversions: 3.3.0, 3.3.1, 3.3.2, 3.3.3, 3.3.4, 3.3.5, 3.3.6, 3.3.7
+
+For a micro version, the output is of the form::
+
+    Version: 3.9.5
+    Level: micro
+    Release-date: 2021-05-03
+    Is-released: yes
+    Is-supported: yes
+
+
+Options
+^^^^^^^
+
+-J, --json                      Output JSON
+
+-S, --subversions [all|not-eol|released|supported]
+                                Which subversions to list; the choices have the
+                                same meanings as the ``list`` options of the
+                                same name  [default: released]
+
+
+Caveats
+=======
 
 The database is generally only updated when an edit is made to a release
 schedule PEP.  Occasionally, a deadline listed in a PEP is missed, but the PEP
