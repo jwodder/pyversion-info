@@ -1,3 +1,7 @@
+v0.5.0 (in development)
+-----------------------
+- Support Python 3.10
+
 v0.4.0 (2021-10-03)
 -------------------
 - `major_versions()`, `minor_versions()`, `micro_versions()`, and
