@@ -123,22 +123,16 @@ A class for querying Python versions and their release & EOL dates
    version is not yet end-of-life.  For a major or minor version, this is
    whether at least one subversion is supported.
 
-``pyvinfo.major_versions(unreleased: bool = False) -> List[str]``
-   Returns a list in version order of all Python major versions (as strings).
-   If ``unreleased`` is true (default: ``False``), the list includes unreleased
-   versions; otherwise, they are omitted.
+``pyvinfo.major_versions() -> List[str]``
+   Returns a list in version order of all known Python major versions (as
+   strings).
 
-``pyinfo.micro_versions(unreleased: bool = False) -> List[str]``
-   Returns a list in version order of all Python micro versions Versions in the
-   form ``X.Y`` are included here as ``X.Y.0``.
+``pyinfo.micro_versions() -> List[str]``
+   Returns a list in version order of all Python micro versions.  Versions in
+   the form ``X.Y`` are included here as ``X.Y.0``.
 
-   If ``unreleased`` is true (default: ``False``), the list includes unreleased
-   versions; otherwise, they are omitted.
-
-``pyvinfo.minor_versions(unreleased: bool = False) -> List[str]``
-   Returns a list in version order of all Python minor versions.  If
-   ``unreleased`` is true (default: ``False``), the list includes unreleased
-   versions; otherwise, they are omitted.
+``pyvinfo.minor_versions() -> List[str]``
+   Returns a list in version order of all Python minor versions.
 
 ``pyvinfo.release_date(version: str) -> Optional[date]``
    Returns the release date of the given Python version.  For a major or minor
@@ -147,14 +141,11 @@ A class for querying Python versions and their release & EOL dates
    version has been released and is known to the database, its release date is
    unknown.
 
-``pyvinfo.subversions(version: str, unreleased: bool = False) -> List[str]``
+``pyvinfo.subversions(version: str) -> List[str]``
    Returns a list in version order of all subversions of the given version.  If
    ``version`` is a major version, this is all of its released minor versions.
    If ``version`` is a minor version, this is all of its released micro
    versions.
-
-   If ``unreleased`` is true (default: ``False``), the list includes unreleased
-   subversions.  Otherwise, they are omitted.
 
 ``pyvinfo.supported_series() -> List[str]``
    Returns a list in version order of all Python version series (i.e., minor

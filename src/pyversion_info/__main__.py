@@ -83,7 +83,7 @@ def list_cmd(pyvinfo: PyVersionInfo, level: str, mode: str) -> None:
         "minor": pyvinfo.minor_versions,
         "micro": pyvinfo.micro_versions,
     }[level]
-    for v in filter_versions(mode, pyvinfo, func):
+    for v in filter_versions(mode, pyvinfo, func()):
         print(v)
 
 
@@ -113,14 +113,14 @@ def show(pyvinfo: PyVersionInfo, version: str, subversions: str, do_json: bool) 
     if len(v) == 1:
         data["level"] = "major"
         data["subversions"] = list(
-            filter_versions(subversions, pyvinfo, partial(pyvinfo.subversions, version))
+            filter_versions(subversions, pyvinfo, pyvinfo.subversions(version))
         )
     elif len(v) == 2:
         data["level"] = "minor"
         data["eol_date"] = pyvinfo.eol_date(version)
         data["is_eol"] = pyvinfo.is_eol(version)
         data["subversions"] = list(
-            filter_versions(subversions, pyvinfo, partial(pyvinfo.subversions, version))
+            filter_versions(subversions, pyvinfo, pyvinfo.subversions(version))
         )
     else:
         data["level"] = "micro"
@@ -144,9 +144,7 @@ def show(pyvinfo: PyVersionInfo, version: str, subversions: str, do_json: bool) 
 def is_not_eol(pyvinfo: PyVersionInfo, version: str) -> bool:
     v = parse_version(version)
     if len(v) == 1:
-        return not all(
-            map(pyvinfo.is_eol, pyvinfo.subversions(version, unreleased=True))
-        )
+        return not all(map(pyvinfo.is_eol, pyvinfo.subversions(version)))
     elif len(v) == 2:
         return not pyvinfo.is_eol(version)
     else:
@@ -159,23 +157,19 @@ def yes(version: str) -> bool:  # noqa: U100
 
 
 def filter_versions(
-    mode: str, pyvinfo: PyVersionInfo, vfunc: Callable[[bool], List[str]]
+    mode: str, pyvinfo: PyVersionInfo, versions: List[str]
 ) -> Iterator[str]:
     if mode == "all":
         filterer = yes
-        unreleased = True
     elif mode == "released":
-        filterer = yes
-        unreleased = False
+        filterer = pyvinfo.is_released
     elif mode == "supported":
         filterer = pyvinfo.is_supported
-        unreleased = False
     elif mode == "not-eol":
         filterer = partial(is_not_eol, pyvinfo)
-        unreleased = True
     else:
         raise AssertionError(f"Unexpected mode: {mode!r}")  # pragma: no cover
-    return filter(filterer, vfunc(unreleased))
+    return filter(filterer, versions)
 
 
 if __name__ == "__main__":
