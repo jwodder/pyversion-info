@@ -1,7 +1,7 @@
 from datetime import date
 import json
 from os.path import dirname, join
-from typing import List
+from typing import List, Optional
 import pytest
 from pyversion_info import PyVersionInfo, UnknownVersionError
 
@@ -374,9 +374,12 @@ def test_micro_versions(pyvinfo: PyVersionInfo) -> None:
         ("3.7.4", date(2019, 6, 24)),
         ("3.8", date(2019, 10, 21)),
         ("3.8.0", date(2019, 10, 21)),
+        ("4", None),
+        ("4.0", None),
+        ("4.0.0", None),
     ],
 )
-def test_release_date(pyvinfo: PyVersionInfo, v: str, rel: date) -> None:
+def test_release_date(pyvinfo: PyVersionInfo, v: str, rel: Optional[date]) -> None:
     assert pyvinfo.release_date(v) == rel
 
 
@@ -568,6 +571,9 @@ def test_release_date_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
         ("3.7.4", False),
         ("3.8", False),
         ("3.8.0", False),
+        ("4", False),
+        ("4.0", False),
+        ("4.0.0", False),
     ],
 )
 def test_is_released(pyvinfo: PyVersionInfo, v: str, rel: bool) -> None:
@@ -592,20 +598,20 @@ def test_is_released_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
 @pytest.mark.parametrize(
     "series,eol",
     [
-        ("0.9", True),
-        ("1.0", True),
-        ("1.1", True),
-        ("1.2", True),
-        ("1.3", True),
-        ("1.4", True),
-        ("1.5", True),
-        ("1.6", True),
-        ("2.0", True),
-        ("2.1", True),
-        ("2.2", True),
-        ("2.3", True),
-        ("2.4", True),
-        ("2.5", True),
+        ("0.9", None),
+        ("1.0", None),
+        ("1.1", None),
+        ("1.2", None),
+        ("1.3", None),
+        ("1.4", None),
+        ("1.5", None),
+        ("1.6", None),
+        ("2.0", None),
+        ("2.1", None),
+        ("2.2", None),
+        ("2.3", None),
+        ("2.4", None),
+        ("2.5", None),
         ("2.6", date(2013, 10, 29)),
         ("2.7", date(2020, 1, 1)),
         ("3.0", date(2009, 1, 13)),
@@ -617,9 +623,10 @@ def test_is_released_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
         ("3.6", date(2021, 12, 23)),
         ("3.7", date(2023, 6, 27)),
         ("3.8", date(2024, 10, 1)),
+        ("4.0", None),
     ],
 )
-def test_eol_date(pyvinfo: PyVersionInfo, series: str, eol: date) -> None:
+def test_eol_date(pyvinfo: PyVersionInfo, series: str, eol: Optional[date]) -> None:
     assert pyvinfo.eol_date(series) == eol
 
 
@@ -668,6 +675,7 @@ def test_eol_date_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
         ("3.6", False),
         ("3.7", False),
         ("3.8", False),
+        ("4.0", False),
     ],
 )
 def test_is_eol(pyvinfo: PyVersionInfo, series: str, is_eol: bool) -> None:

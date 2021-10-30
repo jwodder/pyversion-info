@@ -4,6 +4,14 @@ v1.0.0 (in development)
 - The `unreleased` argument to `major_versions()`, `minor_versions()`,
   `micro_versions()`, and `subversions()` has been removed; the methods now
   return all known versions, released & unreleased
+- The schema used by the database (and thus the URL for the default database)
+  has been modified
+- `release_date()` now returns `None` for any known version whose release date
+  is unknown, whether it's been released yet or not.  Use `is_released()` to
+  determine whether such a version has been released.
+- `eol_date()` now returns `None` for any known version whose EOL date is
+  unknown, whether it's EOL yet or not.  Use `is_eol()` to determine whether
+  such a version has reached end-of-life.
 
 v0.4.0 (2021-10-03)
 -------------------

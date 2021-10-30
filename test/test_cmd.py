@@ -681,7 +681,7 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "2006-09-19",
                 "is_released": True,
                 "is_supported": False,
-                "eol_date": True,
+                "eol_date": None,
                 "is_eol": True,
                 "subversions": [
                     "2.5.0",

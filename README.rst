@@ -99,15 +99,14 @@ A class for querying Python versions and their release & EOL dates
    JSON Schema`__
 
    __ https://raw.githubusercontent.com/jwodder/pyversion-info-data/master/
-      pyversion-info-data.schema.json
+      pyversion-info-data.v1.schema.json
 
-``pyvinfo.eol_date(series: str) -> Union[date, None, Literal[True]]``
+``pyvinfo.eol_date(series: str) -> Optional[date]``
    Returns the end-of-life date of the given Python version series (i.e., a
-   minor version like 3.5).  The return value may be ``None``, indicating that
-   the series is not yet end-of-life and its end-of-life date is unknown or
-   undetermined.  The return value may alternatively be ``True``, indicating
-   that the series has reached end-of-life but the date on which that happened
-   is unknown.
+   minor version like 3.5).  The return value may be ``None``, indicating that,
+   though the series is known to the database, its EOL date is not; use
+   ``is_eol()`` to determine whether such a version has reached end-of-life yet
+   or not.
 
 ``pyvinfo.is_eol(series: str) -> bool``
    Returns whether the given version series has reached end-of-life yet
@@ -138,8 +137,9 @@ A class for querying Python versions and their release & EOL dates
    Returns the release date of the given Python version.  For a major or minor
    version, this is the release date of its first (in version order) micro
    version.  The return value may be ``None``, indicating that, though the
-   version has been released and is known to the database, its release date is
-   unknown.
+   version is known to the database, its release date is not; use
+   ``is_released()`` to determine whether such a version has been released or
+   not.
 
 ``pyvinfo.subversions(version: str) -> List[str]``
    Returns a list in version order of all subversions of the given version.  If
