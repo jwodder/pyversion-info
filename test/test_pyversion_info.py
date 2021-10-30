@@ -3,27 +3,27 @@ import json
 from os.path import dirname, join
 from typing import List, Optional
 import pytest
-from pyversion_info import PyVersionInfo, UnknownVersionError
+from pyversion_info import CPythonVersionInfo, UnknownVersionError, VersionDatabase
 
 INVALID_VERSIONS = ["", "1.2.3.4", "1.2.3rc1", "foobar", "a.b.c"]
 
 
 @pytest.fixture(scope="module")
-def pyvinfo() -> PyVersionInfo:
+def pyvinfo() -> CPythonVersionInfo:
     with open(join(dirname(__file__), "data", "pyversion-info-data.json")) as fp:
         data = json.load(fp)
-    return PyVersionInfo(data)
+    return VersionDatabase.from_json_dict(data).cpython
 
 
-def test_supported_series(pyvinfo: PyVersionInfo) -> None:
+def test_supported_series(pyvinfo: CPythonVersionInfo) -> None:
     assert pyvinfo.supported_series() == ["2.7", "3.5", "3.6", "3.7"]
 
 
-def test_major_versions(pyvinfo: PyVersionInfo) -> None:
+def test_major_versions(pyvinfo: CPythonVersionInfo) -> None:
     assert pyvinfo.major_versions() == ["0", "1", "2", "3", "4"]
 
 
-def test_minor_versions(pyvinfo: PyVersionInfo) -> None:
+def test_minor_versions(pyvinfo: CPythonVersionInfo) -> None:
     assert pyvinfo.minor_versions() == [
         "0.9",
         "1.0",
@@ -54,7 +54,7 @@ def test_minor_versions(pyvinfo: PyVersionInfo) -> None:
     ]
 
 
-def test_micro_versions(pyvinfo: PyVersionInfo) -> None:
+def test_micro_versions(pyvinfo: CPythonVersionInfo) -> None:
     assert pyvinfo.micro_versions() == [
         "0.9.0",
         "0.9.1",
@@ -379,19 +379,19 @@ def test_micro_versions(pyvinfo: PyVersionInfo) -> None:
         ("4.0.0", None),
     ],
 )
-def test_release_date(pyvinfo: PyVersionInfo, v: str, rel: Optional[date]) -> None:
+def test_release_date(pyvinfo: CPythonVersionInfo, v: str, rel: Optional[date]) -> None:
     assert pyvinfo.release_date(v) == rel
 
 
 @pytest.mark.parametrize("v", INVALID_VERSIONS)
-def test_release_date_invalid(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_release_date_invalid(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.release_date(v)
     assert str(excinfo.value) == f"Invalid version string: {v!r}"
 
 
 @pytest.mark.parametrize("v", ["0.8", "2.5.7", "3.9", "3.9.0", "5"])
-def test_release_date_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_release_date_unknown(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.release_date(v)
     assert str(excinfo.value) == f"Unknown version: {v!r}"
@@ -576,19 +576,19 @@ def test_release_date_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
         ("4.0.0", False),
     ],
 )
-def test_is_released(pyvinfo: PyVersionInfo, v: str, rel: bool) -> None:
+def test_is_released(pyvinfo: CPythonVersionInfo, v: str, rel: bool) -> None:
     assert pyvinfo.is_released(v) is rel
 
 
 @pytest.mark.parametrize("v", INVALID_VERSIONS)
-def test_is_released_invalid(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_is_released_invalid(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.is_released(v)
     assert str(excinfo.value) == f"Invalid version string: {v!r}"
 
 
 @pytest.mark.parametrize("v", ["0.8", "2.5.7", "3.9", "3.9.0", "5"])
-def test_is_released_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_is_released_unknown(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.is_released(v)
     assert str(excinfo.value) == f"Unknown version: {v!r}"
@@ -626,21 +626,23 @@ def test_is_released_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
         ("4.0", None),
     ],
 )
-def test_eol_date(pyvinfo: PyVersionInfo, series: str, eol: Optional[date]) -> None:
+def test_eol_date(
+    pyvinfo: CPythonVersionInfo, series: str, eol: Optional[date]
+) -> None:
     assert pyvinfo.eol_date(series) == eol
 
 
 @pytest.mark.parametrize(
     "v", INVALID_VERSIONS + ["2.5.7", "3", "3.0.0", "3.0.1", "3.9.0", "5"]
 )
-def test_eol_date_invalid(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_eol_date_invalid(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.eol_date(v)
     assert str(excinfo.value) == f"Invalid series name: {v!r}"
 
 
 @pytest.mark.parametrize("v", ["0.8", "3.9"])
-def test_eol_date_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_eol_date_unknown(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.eol_date(v)
     assert str(excinfo.value) == f"Unknown version: {v!r}"
@@ -678,21 +680,21 @@ def test_eol_date_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
         ("4.0", False),
     ],
 )
-def test_is_eol(pyvinfo: PyVersionInfo, series: str, is_eol: bool) -> None:
+def test_is_eol(pyvinfo: CPythonVersionInfo, series: str, is_eol: bool) -> None:
     assert pyvinfo.is_eol(series) is is_eol
 
 
 @pytest.mark.parametrize(
     "v", INVALID_VERSIONS + ["2.5.7", "3", "3.0.0", "3.0.1", "3.9.0", "5"]
 )
-def test_is_eol_invalid(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_is_eol_invalid(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.is_eol(v)
     assert str(excinfo.value) == f"Invalid series name: {v!r}"
 
 
 @pytest.mark.parametrize("v", ["0.8", "3.9"])
-def test_is_eol_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_is_eol_unknown(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.is_eol(v)
     assert str(excinfo.value) == f"Unknown version: {v!r}"
@@ -737,19 +739,21 @@ def test_is_eol_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
         ("3.8", False),
     ],
 )
-def test_is_supported(pyvinfo: PyVersionInfo, series: str, is_supported: bool) -> None:
+def test_is_supported(
+    pyvinfo: CPythonVersionInfo, series: str, is_supported: bool
+) -> None:
     assert pyvinfo.is_supported(series) is is_supported
 
 
 @pytest.mark.parametrize("v", INVALID_VERSIONS)
-def test_is_supported_invalid(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_is_supported_invalid(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.is_supported(v)
     assert str(excinfo.value) == f"Invalid version string: {v!r}"
 
 
 @pytest.mark.parametrize("v", ["0.8", "3.9"])
-def test_is_supported_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_is_supported_unknown(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.is_supported(v)
     assert str(excinfo.value) == f"Unknown version: {v!r}"
@@ -867,26 +871,26 @@ def test_is_supported_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
         ("3.8", ["3.8.0"]),
     ],
 )
-def test_subversions(pyvinfo: PyVersionInfo, v: str, subs: List[str]) -> None:
+def test_subversions(pyvinfo: CPythonVersionInfo, v: str, subs: List[str]) -> None:
     assert pyvinfo.subversions(v) == subs
 
 
 @pytest.mark.parametrize("v", INVALID_VERSIONS)
-def test_subversions_invalid(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_subversions_invalid(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.subversions(v)
     assert str(excinfo.value) == f"Invalid version string: {v!r}"
 
 
 @pytest.mark.parametrize("v", ["2.5.7", "3.7.3", "3.9.0"])
-def test_subversions_invalid_micro(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_subversions_invalid_micro(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
         pyvinfo.subversions(v)
     assert str(excinfo.value) == f"Micro versions do not have subversions: {v!r}"
 
 
 @pytest.mark.parametrize("v", ["0.8", "3.9", "5"])
-def test_subversions_unknown(pyvinfo: PyVersionInfo, v: str) -> None:
+def test_subversions_unknown(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
         pyvinfo.subversions(v)
     assert str(excinfo.value) == f"Unknown version: {v!r}"

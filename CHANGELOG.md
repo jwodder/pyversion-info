@@ -1,6 +1,7 @@
 v1.0.0 (in development)
 -----------------------
 - Support Python 3.10
+- Drop support for Python 3.6
 - The `unreleased` argument to `major_versions()`, `minor_versions()`,
   `micro_versions()`, and `subversions()` has been removed; the methods now
   return all known versions, released & unreleased

@@ -15,6 +15,8 @@ a bus.
 Visit <https://github.com/jwodder/pyversion-info> for more information.
 """
 
+from __future__ import annotations
+
 __version__ = "1.0.0.dev1"
 __author__ = "John Thorvald Wodder II"
 __author_email__ = "pyversion-info@varonathe.org"
@@ -22,17 +24,18 @@ __license__ = "MIT"
 __url__ = "https://github.com/jwodder/pyversion-info"
 
 from collections import OrderedDict
+from dataclasses import dataclass
 from datetime import date, datetime
-import sys
-from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 from platformdirs import user_cache_dir
 import requests
 
 __all__ = [
-    "PyVersionInfo",
+    "CPythonVersionInfo",
     "UnknownVersionError",
+    "VersionDatabase",
     "get_pyversion_info",
 ]
 
@@ -45,73 +48,45 @@ DATA_URL = (
 #: The default directory in which the version release data is cached
 CACHE_DIR = user_cache_dir("pyversion-info", "jwodder")
 
-if TYPE_CHECKING:
-    if sys.version_info[:2] >= (3, 8):
-        from typing import TypedDict
-    else:
-        from typing_extensions import TypedDict
 
-    class PyVersionInfoData(TypedDict):
-        release_dates: Dict[str, Union[str, bool]]
-        eol_dates: Dict[str, Union[str, bool]]
+@dataclass
+class VersionDatabase:
+    last_modified: datetime
+    cpython: CPythonVersionInfo
+    # TODO: pypy: PyPyVersionInfo
 
-
-def get_pyversion_info(
-    url: str = DATA_URL, cache_dir: Optional[str] = CACHE_DIR
-) -> "PyVersionInfo":
-    """
-    Fetches the latest version release data from ``url`` and returns a new
-    `PyVersionInfo` object
-
-    :param str url: The URL from which to fetch the data
-    :param str cache_dir: The directory to use for caching HTTP requests.  May
-        be `None` to disable caching.
-    :rtype: PyVersionInfo
-    """
-    s = requests.Session()
-    if cache_dir is not None:
-        s = CacheControl(s, cache=FileCache(cache_dir))
-    with s:
-        r = s.get(url)
-        r.raise_for_status()
-        return PyVersionInfo(r.json()["cpython"])
-
-
-class PyVersionInfo:
-    """A class for querying Python versions and their release & EOL dates"""
-
-    def __init__(self, data: "PyVersionInfoData") -> None:
+    @classmethod
+    def from_json_dict(cls, data: dict) -> VersionDatabase:
         """
-        :param dict data: Version release dates and series EOL dates structured
-            in accordance with `this JSON Schema`__
+        :param dict data: CPython and PyPy version information structured in
+            accordance with `this JSON Schema`__
 
         __ https://raw.githubusercontent.com/jwodder/pyversion-info-data/
            master/pyversion-info-data.v1.schema.json
         """
-        self.version_release_dates: Dict[str, Union[date, bool]] = {
-            v: parse_date(d) for v, d in data["release_dates"].items()
-        }
-        self.series_eol_dates: Dict[str, Union[date, bool]] = {
-            v: parse_date(d) for v, d in data["eol_dates"].items()
+        return cls(
+            last_modified=datetime.fromisoformat(data["last_modified"]),
+            cpython=CPythonVersionInfo(
+                data["cpython"]["release_dates"], data["cpython"]["eol_dates"]
+            ),
+            # TODO: pypy=PyPyVersionInfo(data["pypy"]["release_dates"], data["pypy"]["cpython_versions"]),
+        )
+
+
+class VersionInfo:
+    """
+    A class for storing & querying versions of the form X.Y.Z and their release
+    dates
+    """
+
+    def __init__(self, release_dates: Dict[str, Union[str, bool]]) -> None:
+        # `release_dates` must map X.Y.Z strings to ISO 8601 dates or booleans
+        self.release_dates: Dict[str, Union[date, bool]] = {
+            v: parse_date(d) for v, d in release_dates.items()
         }
         self.version_trie: Dict[int, Dict[int, List[int]]] = OrderedDict()
-        for v in sorted(map(parse_version, self.version_release_dates.keys())):
-            x, y, z = v
+        for x, y, z in sorted(map(parse_version, release_dates.keys())):
             self.version_trie.setdefault(x, OrderedDict()).setdefault(y, []).append(z)
-
-    def supported_series(self) -> List[str]:
-        """
-        Returns a list in version order of all Python version series (i.e.,
-        minor versions like 3.5) that are currently supported (i.e., that have
-        at least one release made and are not yet end-of-life)
-
-        :rtype: list[str]
-        """
-        return [
-            v
-            for v in self.minor_versions()
-            if self.is_released(v) and not self.is_eol(v)
-        ]
 
     def major_versions(self) -> List[str]:
         """
@@ -146,6 +121,36 @@ class PyVersionInfo:
                 micros.extend(unparse_version((major, minor, mc)) for mc in sublist)
         return micros
 
+    def subversions(self, version: str) -> List[str]:
+        """
+        Returns a list in version order of all known subversions of the given
+        version.  If ``version`` is a major version, this is all of its
+        released minor versions.  If ``version`` is a minor version, this is
+        all of its released micro versions.
+
+        :param str version: a Python major or minor version
+        :rtype: list[str]
+        :raises UnknownVersionError: if there is no entry for ``version`` in
+            the database
+        :raises ValueError: if ``version`` is not a valid major or minor
+            version string
+        """
+        v = parse_version(version)
+        try:
+            if len(v) == 1:
+                subs = [
+                    unparse_version(v + (y,)) for y in self.version_trie[v[0]].keys()
+                ]
+            elif len(v) == 2:
+                subs = [
+                    unparse_version(v + (z,)) for z in self.version_trie[v[0]][v[1]]
+                ]
+            elif len(v) == 3:
+                raise ValueError(f"Micro versions do not have subversions: {version!r}")
+        except KeyError:
+            raise UnknownVersionError(version)
+        return subs
+
     def _release_date(self, version: str) -> Union[date, bool]:
         v = parse_version(version)
         try:
@@ -155,7 +160,7 @@ class PyVersionInfo:
             elif len(v) == 2:
                 v += (self.version_trie[v[0]][v[1]][0],)
             vstr = unparse_version(v)
-            return self.version_release_dates[vstr]
+            return self.release_dates[vstr]
         except KeyError:
             raise UnknownVersionError(version)
 
@@ -198,13 +203,41 @@ class PyVersionInfo:
         else:
             return d
 
+
+class CPythonVersionInfo(VersionInfo):
+    """A class for querying CPython versions and their release & EOL dates"""
+
+    def __init__(
+        self,
+        release_dates: Dict[str, Union[str, bool]],
+        eol_dates: Dict[str, Union[str, bool]],
+    ) -> None:
+        super().__init__(release_dates)
+        self.eol_dates: Dict[str, Union[date, bool]] = {
+            v: parse_date(d) for v, d in eol_dates.items()
+        }
+
+    def supported_series(self) -> List[str]:
+        """
+        Returns a list in version order of all Python version series (i.e.,
+        minor versions like 3.5) that are currently supported (i.e., that have
+        at least one release made and are not yet end-of-life)
+
+        :rtype: list[str]
+        """
+        return [
+            v
+            for v in self.minor_versions()
+            if self.is_released(v) and not self.is_eol(v)
+        ]
+
     def _eol_date(self, series: str) -> Union[date, bool]:
         try:
             x, y = map(int, series.split("."))
         except ValueError:
             raise ValueError(f"Invalid series name: {series!r}")
         try:
-            return self.series_eol_dates[f"{x}.{y}"]
+            return self.eol_dates[f"{x}.{y}"]
         except KeyError:
             raise UnknownVersionError(series)
 
@@ -272,40 +305,10 @@ class PyVersionInfo:
                 version
             )
 
-    def subversions(self, version: str) -> List[str]:
-        """
-        Returns a list in version order of all known subversions of the given
-        version.  If ``version`` is a major version, this is all of its
-        released minor versions.  If ``version`` is a minor version, this is
-        all of its released micro versions.
-
-        :param str version: a Python major or minor version
-        :rtype: list[str]
-        :raises UnknownVersionError: if there is no entry for ``version`` in
-            the database
-        :raises ValueError: if ``version`` is not a valid major or minor
-            version string
-        """
-        v = parse_version(version)
-        try:
-            if len(v) == 1:
-                subs = [
-                    unparse_version(v + (y,)) for y in self.version_trie[v[0]].keys()
-                ]
-            elif len(v) == 2:
-                subs = [
-                    unparse_version(v + (z,)) for z in self.version_trie[v[0]][v[1]]
-                ]
-            elif len(v) == 3:
-                raise ValueError(f"Micro versions do not have subversions: {version!r}")
-        except KeyError:
-            raise UnknownVersionError(version)
-        return subs
-
 
 class UnknownVersionError(ValueError):
     """
-    Subclass of `ValueError` raised when `PyVersionInfo` is asked for
+    Subclass of `ValueError` raised when a `VersionInfo` instance is asked for
     information about a version that does not appear in its database.
     Operations that result in an `UnknownVersionError` may succeed later as
     more Python versions are announced & released.
@@ -319,15 +322,36 @@ class UnknownVersionError(ValueError):
         return f"Unknown version: {self.version!r}"
 
 
+def get_pyversion_info(
+    url: str = DATA_URL, cache_dir: Optional[str] = CACHE_DIR
+) -> VersionDatabase:
+    """
+    Fetches the latest version release data from ``url`` and returns a new
+    `VersionDatabase` object
+
+    :param str url: The URL from which to fetch the data
+    :param str cache_dir: The directory to use for caching HTTP requests.  May
+        be `None` to disable caching.
+    :rtype: VersionDatabase
+    """
+    s = requests.Session()
+    if cache_dir is not None:
+        s = CacheControl(s, cache=FileCache(cache_dir))
+    with s:
+        r = s.get(url)
+        r.raise_for_status()
+        return VersionDatabase.from_json_dict(r.json())
+
+
 def parse_date(s: Union[str, bool]) -> Union[date, bool]:
     """
     Convert a string of the form ``YYYY-MM-DD`` into a `datetime.date` object.
-    `None` values and booleans are passed through unaltered.
+    Booleans are passed through unaltered.
     """
     if isinstance(s, bool):
         return s
     else:
-        return datetime.strptime(s, "%Y-%m-%d").date()
+        return date.fromisoformat(s)
 
 
 def parse_version(s: str) -> Tuple[int, ...]:

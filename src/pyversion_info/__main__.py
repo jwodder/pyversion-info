@@ -5,7 +5,8 @@ import re
 from typing import Any, Callable, Dict, Iterator, List, Optional
 import click
 from . import (
-    PyVersionInfo,
+    CPythonVersionInfo,
+    VersionDatabase,
     __version__,
     get_pyversion_info,
     parse_version,
@@ -41,12 +42,13 @@ def map_exc_to_click(func: Callable) -> Callable:
 def main(ctx: click.Context, database: Optional[str]) -> None:
     """Show details about Python versions"""
     if database is None:
-        ctx.obj = get_pyversion_info()
+        vd = get_pyversion_info()
     elif database.lower().startswith(("http://", "https://")):
-        ctx.obj = get_pyversion_info(database)
+        vd = get_pyversion_info(database)
     else:
         with open(database, "rb") as fp:
-            ctx.obj = PyVersionInfo(json.load(fp))
+            vd = VersionDatabase.from_json_dict(json.load(fp))
+    ctx.obj = vd.cpython
 
 
 @main.command("list")
@@ -76,7 +78,7 @@ def main(ctx: click.Context, database: Optional[str]) -> None:
 @click.argument("level", type=click.Choice(["major", "minor", "micro"]))
 @click.pass_obj
 @map_exc_to_click
-def list_cmd(pyvinfo: PyVersionInfo, level: str, mode: str) -> None:
+def list_cmd(pyvinfo: CPythonVersionInfo, level: str, mode: str) -> None:
     """List known versions at the given version level"""
     func = {
         "major": pyvinfo.major_versions,
@@ -100,7 +102,9 @@ def list_cmd(pyvinfo: PyVersionInfo, level: str, mode: str) -> None:
 @click.argument("version")
 @click.pass_obj
 @map_exc_to_click
-def show(pyvinfo: PyVersionInfo, version: str, subversions: str, do_json: bool) -> None:
+def show(
+    pyvinfo: CPythonVersionInfo, version: str, subversions: str, do_json: bool
+) -> None:
     """Show information about a Python version"""
     v = parse_version(version)
     data: Dict[str, Any] = {
@@ -141,7 +145,7 @@ def show(pyvinfo: PyVersionInfo, version: str, subversions: str, do_json: bool) 
             print(f"{label}: {val}")
 
 
-def is_not_eol(pyvinfo: PyVersionInfo, version: str) -> bool:
+def is_not_eol(pyvinfo: CPythonVersionInfo, version: str) -> bool:
     v = parse_version(version)
     if len(v) == 1:
         return not all(map(pyvinfo.is_eol, pyvinfo.subversions(version)))
@@ -157,7 +161,7 @@ def yes(version: str) -> bool:  # noqa: U100
 
 
 def filter_versions(
-    mode: str, pyvinfo: PyVersionInfo, versions: List[str]
+    mode: str, pyvinfo: CPythonVersionInfo, versions: List[str]
 ) -> Iterator[str]:
     if mode == "all":
         filterer = yes
