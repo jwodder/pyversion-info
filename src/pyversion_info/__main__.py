@@ -46,7 +46,7 @@ def main(ctx: click.Context, database: Optional[str]) -> None:
         vd = VersionDatabase.fetch(database)
     else:
         with open(database, "rb") as fp:
-            vd = VersionDatabase.from_json_dict(json.load(fp))
+            vd = VersionDatabase.parse_obj(json.load(fp))
     ctx.obj = vd.cpython
 
 

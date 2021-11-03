@@ -22,4 +22,4 @@ def use_fixed_date(mocker: MockerFixture) -> None:
 def version_database() -> VersionDatabase:
     with DATA_FILE.open() as fp:
         data = json.load(fp)
-    return VersionDatabase.from_json_dict(data)
+    return VersionDatabase.parse_obj(data)

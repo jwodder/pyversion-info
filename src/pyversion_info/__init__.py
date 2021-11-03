@@ -75,10 +75,10 @@ class VersionDatabase:
         with s:
             r = s.get(url)
             r.raise_for_status()
-            return cls.from_json_dict(r.json())
+            return cls.parse_obj(r.json())
 
     @classmethod
-    def from_json_dict(cls, data: dict) -> VersionDatabase:
+    def parse_obj(cls, data: dict) -> VersionDatabase:
         """
         :param dict data: CPython and PyPy version information structured in
             accordance with `this JSON Schema`__
