@@ -1,6 +1,4 @@
 from datetime import date
-import json
-from os.path import dirname, join
 from typing import List, Optional
 import pytest
 from pyversion_info import CPythonVersionInfo, UnknownVersionError, VersionDatabase
@@ -9,10 +7,8 @@ INVALID_VERSIONS = ["", "1.2.3.4", "1.2.3rc1", "foobar", "a.b.c"]
 
 
 @pytest.fixture(scope="module")
-def pyvinfo() -> CPythonVersionInfo:
-    with open(join(dirname(__file__), "data", "pyversion-info-data.json")) as fp:
-        data = json.load(fp)
-    return VersionDatabase.from_json_dict(data).cpython
+def pyvinfo(version_database: VersionDatabase) -> CPythonVersionInfo:
+    return version_database.cpython
 
 
 def test_supported_series(pyvinfo: CPythonVersionInfo) -> None:

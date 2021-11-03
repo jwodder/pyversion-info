@@ -26,7 +26,8 @@ __url__ = "https://github.com/jwodder/pyversion-info"
 from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from pathlib import Path
+from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 from platformdirs import user_cache_dir
@@ -34,6 +35,7 @@ import requests
 
 __all__ = [
     "CPythonVersionInfo",
+    "PyPyVersionInfo",
     "UnknownVersionError",
     "VersionDatabase",
     "get_pyversion_info",
@@ -53,7 +55,7 @@ CACHE_DIR = user_cache_dir("pyversion-info", "jwodder")
 class VersionDatabase:
     last_modified: datetime
     cpython: CPythonVersionInfo
-    # TODO: pypy: PyPyVersionInfo
+    pypy: PyPyVersionInfo
 
     @classmethod
     def from_json_dict(cls, data: dict) -> VersionDatabase:
@@ -69,17 +71,18 @@ class VersionDatabase:
             cpython=CPythonVersionInfo(
                 data["cpython"]["release_dates"], data["cpython"]["eol_dates"]
             ),
-            # TODO: pypy=PyPyVersionInfo(data["pypy"]["release_dates"], data["pypy"]["cpython_versions"]),
+            pypy=PyPyVersionInfo(
+                data["pypy"]["release_dates"], data["pypy"]["cpython_versions"]
+            ),
         )
 
 
 class VersionInfo:
     """
-    A class for storing & querying versions of the form X.Y.Z and their release
-    dates
+    A class for representing versions of the form X.Y.Z and their release dates
     """
 
-    def __init__(self, release_dates: Dict[str, Union[str, bool]]) -> None:
+    def __init__(self, release_dates: Mapping[str, Union[str, bool]]) -> None:
         # `release_dates` must map X.Y.Z strings to ISO 8601 dates or booleans
         self.release_dates: Dict[str, Union[date, bool]] = {
             v: parse_date(d) for v, d in release_dates.items()
@@ -205,12 +208,12 @@ class VersionInfo:
 
 
 class CPythonVersionInfo(VersionInfo):
-    """A class for querying CPython versions and their release & EOL dates"""
+    """A class for representing CPython versions and their release & EOL dates"""
 
     def __init__(
         self,
-        release_dates: Dict[str, Union[str, bool]],
-        eol_dates: Dict[str, Union[str, bool]],
+        release_dates: Mapping[str, Union[str, bool]],
+        eol_dates: Mapping[str, Union[str, bool]],
     ) -> None:
         super().__init__(release_dates)
         self.eol_dates: Dict[str, Union[date, bool]] = {
@@ -306,6 +309,79 @@ class CPythonVersionInfo(VersionInfo):
             )
 
 
+class PyPyVersionInfo(VersionInfo):
+    """
+    A class for representing PyPy versions, their release dates, and their
+    corresponding CPython versions
+    """
+
+    def __init__(
+        self,
+        release_dates: Mapping[str, Union[str, bool]],
+        cpython_versions: Mapping[str, List[str]],
+    ) -> None:
+        super().__init__(release_dates)
+        self.cpython_versions: Dict[str, List[str]] = {
+            v: sorted(versions, key=parse_version)
+            for v, versions in cpython_versions.items()
+        }
+
+    def supports_cpython(self, version: str) -> List[str]:
+        """
+        Given a PyPy micro version, returns a list of the corresponding CPython
+        micro versions in version order.
+
+        :raises UnknownVersionError: if there is no entry for ``version`` in
+            the database
+        :raises ValueError: if ``version`` is not a valid micro version string
+        """
+        try:
+            x, y, z = map(int, version.split("."))
+        except ValueError:
+            raise ValueError(f"Invalid micro version: {version!r}")
+        try:
+            return list(self.cpython_versions[f"{x}.{y}.{z}"])
+        except KeyError:
+            raise UnknownVersionError(version)
+
+    def supports_cpython_series(self, version: str) -> List[str]:
+        """
+        Given a PyPy version, returns a list of all CPython series supported by
+        that version or its subversions in version order.
+
+        >>> db.supports_cpython_series("7.3.5")
+        ['2.7', '3.7']
+        >>> db.supports_cpython_series("7.3")
+        ['2.7', '3.6', '3.7', '3.8']
+        >>> db.supports_cpython_series("7")
+        ['2.7', '3.5', '3.6', '3.7', '3.8']
+
+        :raises UnknownVersionError: if there is no entry for ``version`` in
+            the database
+        :raises ValueError: if ``version`` is not a valid version string
+        """
+        v = parse_version(version)
+        try:
+            if len(v) == 1:
+                (x,) = v
+                micros = [
+                    f"{x}.{y}.{z}" for y, zs in self.version_trie[x].items() for z in zs
+                ]
+            elif len(v) == 2:
+                x, y = v
+                micros = [f"{x}.{y}.{z}" for z in self.version_trie[x][y]]
+            else:
+                micros = [unparse_version(v)]
+            series_set = {
+                parse_version(cpyv)[:2]
+                for m in micros
+                for cpyv in self.cpython_versions[m]
+            }
+            return list(map(unparse_version, sorted(series_set)))
+        except KeyError:
+            raise UnknownVersionError(version)
+
+
 class UnknownVersionError(ValueError):
     """
     Subclass of `ValueError` raised when a `VersionInfo` instance is asked for
@@ -323,15 +399,15 @@ class UnknownVersionError(ValueError):
 
 
 def get_pyversion_info(
-    url: str = DATA_URL, cache_dir: Optional[str] = CACHE_DIR
+    url: str = DATA_URL, cache_dir: Union[str, Path, None] = CACHE_DIR
 ) -> VersionDatabase:
     """
     Fetches the latest version release data from ``url`` and returns a new
     `VersionDatabase` object
 
     :param str url: The URL from which to fetch the data
-    :param str cache_dir: The directory to use for caching HTTP requests.  May
-        be `None` to disable caching.
+    :param Union[str,Path,None] cache_dir: The directory to use for caching
+        HTTP requests.  May be `None` to disable caching.
     :rtype: VersionDatabase
     """
     s = requests.Session()
