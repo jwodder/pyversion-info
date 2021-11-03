@@ -8,7 +8,6 @@ from . import (
     CPythonVersionInfo,
     VersionDatabase,
     __version__,
-    get_pyversion_info,
     parse_version,
     unparse_version,
 )
@@ -42,9 +41,9 @@ def map_exc_to_click(func: Callable) -> Callable:
 def main(ctx: click.Context, database: Optional[str]) -> None:
     """Show details about Python versions"""
     if database is None:
-        vd = get_pyversion_info()
+        vd = VersionDatabase.fetch()
     elif database.lower().startswith(("http://", "https://")):
-        vd = get_pyversion_info(database)
+        vd = VersionDatabase.fetch(database)
     else:
         with open(database, "rb") as fp:
             vd = VersionDatabase.from_json_dict(json.load(fp))

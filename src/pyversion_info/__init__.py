@@ -38,7 +38,6 @@ __all__ = [
     "PyPyVersionInfo",
     "UnknownVersionError",
     "VersionDatabase",
-    "get_pyversion_info",
 ]
 
 #: The default URL from which to download the version release data
@@ -56,6 +55,27 @@ class VersionDatabase:
     last_modified: datetime
     cpython: CPythonVersionInfo
     pypy: PyPyVersionInfo
+
+    @classmethod
+    def fetch(
+        cls, url: str = DATA_URL, cache_dir: Union[str, Path, None] = CACHE_DIR
+    ) -> VersionDatabase:
+        """
+        Fetches the latest version information from ``url`` and returns a new
+        `VersionDatabase` object
+
+        :param str url: The URL from which to fetch the data
+        :param Union[str,Path,None] cache_dir: The directory to use for caching
+            HTTP requests.  May be `None` to disable caching.
+        :rtype: VersionDatabase
+        """
+        s = requests.Session()
+        if cache_dir is not None:
+            s = CacheControl(s, cache=FileCache(cache_dir))
+        with s:
+            r = s.get(url)
+            r.raise_for_status()
+            return cls.from_json_dict(r.json())
 
     @classmethod
     def from_json_dict(cls, data: dict) -> VersionDatabase:
@@ -148,7 +168,8 @@ class VersionInfo:
                 subs = [
                     unparse_version(v + (z,)) for z in self.version_trie[v[0]][v[1]]
                 ]
-            elif len(v) == 3:
+            else:
+                assert len(v) == 3
                 raise ValueError(f"Micro versions do not have subversions: {version!r}")
         except KeyError:
             raise UnknownVersionError(version)
@@ -396,27 +417,6 @@ class UnknownVersionError(ValueError):
 
     def __str__(self) -> str:
         return f"Unknown version: {self.version!r}"
-
-
-def get_pyversion_info(
-    url: str = DATA_URL, cache_dir: Union[str, Path, None] = CACHE_DIR
-) -> VersionDatabase:
-    """
-    Fetches the latest version release data from ``url`` and returns a new
-    `VersionDatabase` object
-
-    :param str url: The URL from which to fetch the data
-    :param Union[str,Path,None] cache_dir: The directory to use for caching
-        HTTP requests.  May be `None` to disable caching.
-    :rtype: VersionDatabase
-    """
-    s = requests.Session()
-    if cache_dir is not None:
-        s = CacheControl(s, cache=FileCache(cache_dir))
-    with s:
-        r = s.get(url)
-        r.raise_for_status()
-        return VersionDatabase.from_json_dict(r.json())
 
 
 def parse_date(s: Union[str, bool]) -> Union[date, bool]:

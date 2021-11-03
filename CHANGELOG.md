@@ -2,11 +2,18 @@ v1.0.0 (in development)
 -----------------------
 - Support Python 3.10
 - Drop support for Python 3.6
+- Support for fetching information on PyPy versions has been added.  With it
+  come the following changes:
+    - The schema used by the database (and thus the URL for the default
+      database) has been modified
+    - `PyVersionInfo` has been renamed to `CPythonVersionInfo`
+    - A new `PyPyVersionInfo` class has been added
+    - A new `VersionDatabase` class has been added, containing a
+      `CPythonVersionInfo` instance and a `PyPyVersionInfo` instance
+    - `get_pyversion_info()` is now `VersionDatabase.fetch()`
 - The `unreleased` argument to `major_versions()`, `minor_versions()`,
   `micro_versions()`, and `subversions()` has been removed; the methods now
   return all known versions, released & unreleased
-- The schema used by the database (and thus the URL for the default database)
-  has been modified
 - `release_date()` now returns `None` for any known version whose release date
   is unknown, whether it's been released yet or not.  Use `is_released()` to
   determine whether such a version has been released.
