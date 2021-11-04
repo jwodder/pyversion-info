@@ -23,9 +23,6 @@
 | `Issues <https://github.com/jwodder/pyversion-info/issues>`_
 | `Changelog <https://github.com/jwodder/pyversion-info/blob/master/CHANGELOG.md>`_
 
-.. contents::
-    :backlinks: top
-
 Ever needed to know what Python versions were currently supported, or how many
 subversions a given Python version had?  Wondering how long until a given
 version came out or reached end-of-life?  Need to know what CPython versions a
