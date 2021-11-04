@@ -3,7 +3,8 @@ Get information about released & unreleased CPython and PyPy versions
 
 Ever needed to know what Python versions were currently supported, or how many
 subversions a given Python version had?  Wondering how long until a given
-version came out or reached end-of-life?  The answers to these and some other
+version came out or reached end-of-life?  Need to know what CPython versions a
+given PyPy version corresponds to?  The answers to these and some other
 questions can be found with this library.
 
 ``pyversion-info`` pulls its data every run from
@@ -12,7 +13,8 @@ on GitHub.  Prerelease versions are not (currently) included.  I promise
 24-hour turnaround times for keeping the database up-to-date until I am hit by
 a bus.
 
-Visit <https://github.com/jwodder/pyversion-info> for more information.
+Visit <https://github.com/jwodder/pyversion-info> or
+<https://pyversion-info.rtfd.io> for more information.
 """
 
 from __future__ import annotations
@@ -35,27 +37,42 @@ from platformdirs import user_cache_dir
 import requests
 
 __all__ = [
+    "CACHE_DIR",
     "CPythonVersionInfo",
+    "DATA_URL",
     "PyPyVersionInfo",
     "UnknownVersionError",
     "VersionDatabase",
     "VersionInfo",
 ]
 
-#: The default URL from which to download the version release data
+#: The default URL from which the version database is downloaded
 DATA_URL = (
     "https://raw.githubusercontent.com/jwodder/pyversion-info-data/master"
     "/pyversion-info-data.v1.json"
 )
 
-#: The default directory in which the version release data is cached
+#: The default directory in which the downloaded version database is cached
 CACHE_DIR = user_cache_dir("pyversion-info", "jwodder")
 
 
 @dataclass
 class VersionDatabase:
+    """
+    .. versionadded:: 1.0.0
+
+    A database of CPython and PyPy version information.  Instances are
+    constructed from JSON objects following `this JSON Schema`__.
+
+    __ https://raw.githubusercontent.com/jwodder/pyversion-info-data/master/
+       pyversion-info-data.v1.schema.json
+    """
+
+    #: The date & time when the database was last updated
     last_modified: datetime
+    #: A database of CPython version information
     cpython: CPythonVersionInfo
+    #: A database of PyPy version information
     pypy: PyPyVersionInfo
 
     @classmethod
@@ -63,8 +80,8 @@ class VersionDatabase:
         cls, url: str = DATA_URL, cache_dir: Union[str, Path, None] = CACHE_DIR
     ) -> VersionDatabase:
         """
-        Fetches the latest version information from ``url`` and returns a new
-        `VersionDatabase` object
+        Fetches the latest version information from the JSON document at
+        ``url`` and returns a new `VersionDatabase` instance
 
         :param str url: The URL from which to fetch the data
         :param Union[str,Path,None] cache_dir: The directory to use for caching
@@ -81,17 +98,18 @@ class VersionDatabase:
 
     @classmethod
     def parse_file(cls, filepath: Union[str, Path]) -> VersionDatabase:
+        """
+        Parses a version database from a JSON file and returns a new
+        `VersionDatabase` instance
+        """
         with open(filepath, "rb") as fp:
             return cls.parse_obj(json.load(fp))
 
     @classmethod
     def parse_obj(cls, data: dict) -> VersionDatabase:
         """
-        :param dict data: CPython and PyPy version information structured in
-            accordance with `this JSON Schema`__
-
-        __ https://raw.githubusercontent.com/jwodder/pyversion-info-data/
-           master/pyversion-info-data.v1.schema.json
+        Parses a version database from a `dict` deserialized from a JSON
+        document and returns a new `VersionDatabase` instance
         """
         return cls(
             last_modified=datetime.fromisoformat(data["last_modified"]),
@@ -106,7 +124,9 @@ class VersionDatabase:
 
 class VersionInfo:
     """
-    A class for representing versions of the form X.Y.Z and their release dates
+    .. versionadded:: 1.0.0
+
+    A base class for storing & querying versions and their release dates
     """
 
     def __init__(self, release_dates: Mapping[str, Union[str, bool]]) -> None:
@@ -120,18 +140,20 @@ class VersionInfo:
 
     def major_versions(self) -> List[str]:
         """
-        Returns a list in version order of known all Python major versions (as
+        Returns a list in version order of all known major versions (as
         strings).
 
-        :rtype: list[str]
+        .. versionchanged:: 1.0.0
+            Now returns all known versions, released & unreleased
         """
         return list(map(str, self.version_trie.keys()))
 
     def minor_versions(self) -> List[str]:
         """
-        Returns a list in version order of all known Python minor versions.
+        Returns a list in version order of all known minor versions
 
-        :rtype: list[str]
+        .. versionchanged:: 1.0.0
+            Now returns all known versions, released & unreleased
         """
         minors: List[str] = []
         for major, subtrie in self.version_trie.items():
@@ -140,10 +162,10 @@ class VersionInfo:
 
     def micro_versions(self) -> List[str]:
         """
-        Returns a list in version order of all known Python micro versions.
-        Versions in the form ``X.Y`` are included here as ``X.Y.0``.
+        Returns a list in version order of all known micro versions
 
-        :rtype: list[str]
+        .. versionchanged:: 1.0.0
+            Now returns all known versions, released & unreleased
         """
         micros: List[str] = []
         for major, subtrie in self.version_trie.items():
@@ -154,12 +176,14 @@ class VersionInfo:
     def subversions(self, version: str) -> List[str]:
         """
         Returns a list in version order of all known subversions of the given
-        version.  If ``version`` is a major version, this is all of its
-        released minor versions.  If ``version`` is a minor version, this is
-        all of its released micro versions.
+        version.  If ``version`` is a major version, this is all of its minor
+        versions.  If ``version`` is a minor version, this is all of its micro
+        versions.
 
-        :param str version: a Python major or minor version
-        :rtype: list[str]
+        .. versionchanged:: 1.0.0
+            Now returns all known subversions, released & unreleased
+
+        :param str version: a major or minor version
         :raises UnknownVersionError: if there is no entry for ``version`` in
             the database
         :raises ValueError: if ``version`` is not a valid major or minor
@@ -197,12 +221,15 @@ class VersionInfo:
 
     def release_date(self, version: str) -> Optional[date]:
         """
-        Returns the release date of the given Python version.  For a major or
-        minor version, this is the release date of its first (in version order)
-        micro version.  The return value may be `None`, indicating that, though
-        the version is known to the database, its release date is not; use
+        Returns the release date of the given version.  For a major or minor
+        version, this is the release date of its first (in version order) micro
+        version.  The return value may be `None`, indicating that, though the
+        version is known to the database, its release date is not; use
         `is_released()` to determine whether such a version has been released
-        or not.
+        yet.
+
+        .. versionchanged:: 1.0.0
+            Unknown release dates are now always returned as `None`
 
         :param str version: the version to fetch the release date of
         :rtype: Optional[datetime.date]
@@ -236,7 +263,13 @@ class VersionInfo:
 
 
 class CPythonVersionInfo(VersionInfo):
-    """A class for representing CPython versions and their release & EOL dates"""
+    """
+    A class for storing & querying CPython versions, their release dates, and
+    series EOL dates
+
+    .. versionchanged:: 1.0.0
+        This class was previously named ``PyVersionInfo``
+    """
 
     def __init__(
         self,
@@ -250,11 +283,9 @@ class CPythonVersionInfo(VersionInfo):
 
     def supported_series(self) -> List[str]:
         """
-        Returns a list in version order of all Python version series (i.e.,
+        Returns a list in version order of all CPython version series (i.e.,
         minor versions like 3.5) that are currently supported (i.e., that have
         at least one release made and are not yet end-of-life)
-
-        :rtype: list[str]
         """
         return [
             v
@@ -274,11 +305,14 @@ class CPythonVersionInfo(VersionInfo):
 
     def eol_date(self, series: str) -> Optional[date]:
         """
-        Returns the end-of-life date of the given Python version series (i.e.,
+        Returns the end-of-life date of the given CPython version series (i.e.,
         a minor version like 3.5).  The return value may be `None`, indicating
         that, though the series is known to the database, its EOL date is not;
         use `is_eol()` to determine whether such a version has reached
-        end-of-life yet or not.
+        end-of-life yet.
+
+        .. versionchanged:: 1.0.0
+            Unknown end-of-life dates are now always returned as `None`
 
         :param str series: a Python version series/minor version number
         :rtype: Optional[datetime.date]
@@ -315,9 +349,6 @@ class CPythonVersionInfo(VersionInfo):
         minor version is not yet end-of-life.  For a major or minor version,
         this is whether at least one subversion is supported.
 
-        .. versionchanged:: 0.4.0
-            Major and micro versions now accepted
-
         :param str version: the version to query the support status of
         :rtype: bool
         :raises UnknownVersionError: if there is no entry for ``version`` in
@@ -339,8 +370,10 @@ class CPythonVersionInfo(VersionInfo):
 
 class PyPyVersionInfo(VersionInfo):
     """
-    A class for representing PyPy versions, their release dates, and their
-    corresponding CPython versions
+    .. versionadded:: 1.0.0
+
+    A class for storing & querying PyPy versions, their release dates, and
+    their corresponding CPython versions
     """
 
     def __init__(

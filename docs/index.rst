@@ -1,30 +1,21 @@
-.. image:: http://www.repostatus.org/badges/latest/active.svg
-    :target: http://www.repostatus.org/#active
-    :alt: Project Status: Active — The project has reached a stable, usable
-          state and is being actively developed.
+.. module:: pyversion_info
 
-.. image:: https://github.com/jwodder/pyversion-info/workflows/Test/badge.svg?branch=master
-    :target: https://github.com/jwodder/pyversion-info/actions?workflow=Test
-    :alt: CI Status
-
-.. image:: https://codecov.io/gh/jwodder/pyversion-info/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/jwodder/pyversion-info
-
-.. image:: https://img.shields.io/pypi/pyversions/pyversion-info.svg
-    :target: https://pypi.org/project/pyversion-info/
-
-.. image:: https://img.shields.io/github/license/jwodder/pyversion-info.svg
-    :target: https://opensource.org/licenses/MIT
-    :alt: MIT License
+================================================================
+pyversion-info — Get information about CPython and PyPy versions
+================================================================
 
 `GitHub <https://github.com/jwodder/pyversion-info>`_
 | `PyPI <https://pypi.org/project/pyversion-info/>`_
 | `Documentation <https://pyversion-info.readthedocs.io>`_
 | `Issues <https://github.com/jwodder/pyversion-info/issues>`_
-| `Changelog <https://github.com/jwodder/pyversion-info/blob/master/CHANGELOG.md>`_
+| :doc:`Changelog <changelog>`
 
-.. contents::
-    :backlinks: top
+.. toctree::
+    :hidden:
+
+    api
+    command
+    changelog
 
 Ever needed to know what Python versions were currently supported, or how many
 subversions a given Python version had?  Wondering how long until a given
@@ -37,9 +28,6 @@ questions can be found with this library.
 on GitHub.  Prerelease versions are not (currently) included.  I promise
 24-hour turnaround times for keeping the database up-to-date until I am hit by
 a bus.
-
-See `the documentation <https://pyversion-info.readthedocs.io>`_ for more
-information.
 
 
 Installation
@@ -99,3 +87,9 @@ The CPython database is generally only updated when an edit is made to a
 release schedule PEP.  Occasionally, a deadline listed in a PEP is missed, but
 the PEP is not updated for a couple days, and so for a brief period this
 library will falsely report the given version as released.
+
+
+Indices and tables
+==================
+* :ref:`genindex`
+* :ref:`search`
