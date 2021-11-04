@@ -259,6 +259,23 @@ def test_cmd_list_supported(level: str) -> None:
                 "CPython: 3.7.12, 3.8.12\n"
             ),
         ),
+        (
+            "8.0.0",
+            {
+                "version": "8.0.0",
+                "level": "micro",
+                "release_date": None,
+                "is_released": False,
+                "cpython": ["3.11.1"],
+            },
+            (
+                "Version: 8.0.0\n"
+                "Level: micro\n"
+                "Release-Date: UNKNOWN\n"
+                "Is-Released: no\n"
+                "CPython: 3.11.1\n"
+            ),
+        ),
     ],
 )
 @pytest.mark.parametrize("subversions", ["released", "all"])

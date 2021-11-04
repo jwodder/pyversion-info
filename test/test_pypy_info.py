@@ -96,13 +96,34 @@ def test_supports_cpython_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
     [
         ("7.3.5", ["2.7", "3.7"]),
         ("7.3", ["2.7", "3.6", "3.7", "3.8"]),
-        ("7", ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9"]),
     ],
 )
+@pytest.mark.parametrize("released", [False, True])
 def test_supports_cpython_series(
-    pypyinfo: PyPyVersionInfo, version: str, series: List[str]
+    pypyinfo: PyPyVersionInfo, version: str, released: bool, series: List[str]
 ) -> None:
-    assert pypyinfo.supports_cpython_series(version) == series
+    assert pypyinfo.supports_cpython_series(version, released=released) == series
+    if released is False:
+        assert pypyinfo.supports_cpython_series(version) == series
+
+
+@pytest.mark.parametrize(
+    "version,released,series",
+    [
+        ("7", False, ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9"]),
+        ("7", True, ["2.7", "3.5", "3.6", "3.7", "3.8"]),
+        ("7.4", False, ["2.7", "3.8", "3.9"]),
+        ("7.4", True, []),
+        ("8.0.0", False, ["3.11"]),
+        ("8.0.0", True, []),
+    ],
+)
+def test_supports_cpython_series_released(
+    pypyinfo: PyPyVersionInfo, version: str, released: bool, series: List[str]
+) -> None:
+    assert pypyinfo.supports_cpython_series(version, released=released) == series
+    if released is False:
+        assert pypyinfo.supports_cpython_series(version) == series
 
 
 @pytest.mark.parametrize("v", INVALID_VERSIONS)
