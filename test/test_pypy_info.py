@@ -70,23 +70,23 @@ def pypyinfo(version_database: VersionDatabase) -> PyPyVersionInfo:
         ("7.3.7", ["3.7.12", "3.8.12"]),
     ],
 )
-def test_supports_cpython(
+def test_supported_cpython(
     pypyinfo: PyPyVersionInfo, version: str, cpythons: List[str]
 ) -> None:
-    assert pypyinfo.supports_cpython(version) == cpythons
+    assert pypyinfo.supported_cpython(version) == cpythons
 
 
 @pytest.mark.parametrize("v", INVALID_VERSIONS + ["7.3", "7"])
-def test_supports_cpython_invalid(pypyinfo: PyPyVersionInfo, v: str) -> None:
+def test_supported_cpython_invalid(pypyinfo: PyPyVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
-        pypyinfo.supports_cpython(v)
+        pypyinfo.supported_cpython(v)
     assert str(excinfo.value) == f"Invalid micro version: {v!r}"
 
 
 @pytest.mark.parametrize("v", ["0.8.0", "1.5.0", "3.0.0", "7.3.9", "9.0.0"])
-def test_supports_cpython_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
+def test_supported_cpython_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
-        pypyinfo.supports_cpython(v)
+        pypyinfo.supported_cpython(v)
     assert str(excinfo.value) == f"Unknown version: {v!r}"
     assert excinfo.value.version == v
 
@@ -99,12 +99,12 @@ def test_supports_cpython_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
     ],
 )
 @pytest.mark.parametrize("released", [False, True])
-def test_supports_cpython_series(
+def test_supported_cpython_series(
     pypyinfo: PyPyVersionInfo, version: str, released: bool, series: List[str]
 ) -> None:
-    assert pypyinfo.supports_cpython_series(version, released=released) == series
+    assert pypyinfo.supported_cpython_series(version, released=released) == series
     if released is False:
-        assert pypyinfo.supports_cpython_series(version) == series
+        assert pypyinfo.supported_cpython_series(version) == series
 
 
 @pytest.mark.parametrize(
@@ -118,24 +118,24 @@ def test_supports_cpython_series(
         ("8.0.0", True, []),
     ],
 )
-def test_supports_cpython_series_released(
+def test_supported_cpython_series_released(
     pypyinfo: PyPyVersionInfo, version: str, released: bool, series: List[str]
 ) -> None:
-    assert pypyinfo.supports_cpython_series(version, released=released) == series
+    assert pypyinfo.supported_cpython_series(version, released=released) == series
     if released is False:
-        assert pypyinfo.supports_cpython_series(version) == series
+        assert pypyinfo.supported_cpython_series(version) == series
 
 
 @pytest.mark.parametrize("v", INVALID_VERSIONS)
-def test_supports_cpython_series_invalid(pypyinfo: PyPyVersionInfo, v: str) -> None:
+def test_supported_cpython_series_invalid(pypyinfo: PyPyVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
-        pypyinfo.supports_cpython_series(v)
+        pypyinfo.supported_cpython_series(v)
     assert str(excinfo.value) == f"Invalid version string: {v!r}"
 
 
 @pytest.mark.parametrize("v", ["0.8", "1.5", "3", "7.3.9", "9.0.0"])
-def test_supports_cpython_series_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
+def test_supported_cpython_series_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
-        pypyinfo.supports_cpython_series(v)
+        pypyinfo.supported_cpython_series(v)
     assert str(excinfo.value) == f"Unknown version: {v!r}"
     assert excinfo.value.version == v

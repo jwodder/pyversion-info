@@ -387,7 +387,7 @@ class PyPyVersionInfo(VersionInfo):
             for v, versions in cpython_versions.items()
         }
 
-    def supports_cpython(self, version: str) -> List[str]:
+    def supported_cpython(self, version: str) -> List[str]:
         """
         Given a PyPy micro version, returns a list of the corresponding CPython
         micro versions in version order.
@@ -405,7 +405,7 @@ class PyPyVersionInfo(VersionInfo):
         except KeyError:
             raise UnknownVersionError(version)
 
-    def supports_cpython_series(
+    def supported_cpython_series(
         self, version: str, released: bool = False
     ) -> List[str]:
         """
@@ -413,11 +413,11 @@ class PyPyVersionInfo(VersionInfo):
         that version or its subversions in version order.  If ``released`` is
         true, only released versions are considered.
 
-        >>> db.supports_cpython_series("7.3.5")
+        >>> db.supported_cpython_series("7.3.5")
         ['2.7', '3.7']
-        >>> db.supports_cpython_series("7.3")
+        >>> db.supported_cpython_series("7.3")
         ['2.7', '3.6', '3.7', '3.8']
-        >>> db.supports_cpython_series("7")
+        >>> db.supported_cpython_series("7")
         ['2.7', '3.5', '3.6', '3.7', '3.8']
 
         :raises UnknownVersionError: if there is no entry for ``version`` in

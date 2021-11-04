@@ -76,7 +76,7 @@ What major versions of PyPy are there?
 
 What CPython series do PyPy 7.3.\* support?
 
->>> vd.pypy.supports_cpython_series("7.3")
+>>> vd.pypy.supported_cpython_series("7.3")
 ['2.7', '3.6', '3.7', '3.8']
 
 

@@ -155,7 +155,7 @@ def show(
                 (
                     "cpython_series",
                     "CPython-Series",
-                    info.supports_cpython_series(
+                    info.supported_cpython_series(
                         version, released=subversions == "released"
                     ),
                 )
@@ -177,7 +177,7 @@ def show(
                 (
                     "cpython_series",
                     "CPython-Series",
-                    info.supports_cpython_series(
+                    info.supported_cpython_series(
                         version, released=subversions == "released"
                     ),
                 )
@@ -185,7 +185,7 @@ def show(
     else:
         data.insert(1, ("level", "Level", "micro"))
         if isinstance(info, PyPyVersionInfo):
-            data.append(("cpython", "CPython", info.supports_cpython(version)))
+            data.append(("cpython", "CPython", info.supported_cpython(version)))
     if do_json:
         print(json.dumps({k: v for k, _, v in data}, indent=4, default=str))
     else:
