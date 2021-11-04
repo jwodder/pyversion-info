@@ -1,5 +1,5 @@
 """
-List released Python versions and their release & EOL dates
+Get information about released & unreleased CPython and PyPy versions
 
 Ever needed to know what Python versions were currently supported, or how many
 subversions a given Python version had?  Wondering how long until a given
