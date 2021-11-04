@@ -22,6 +22,7 @@ v1.0.0 (in development)
 - `eol_date()` now returns `None` for any known version whose EOL date is
   unknown, whether it's EOL yet or not.  Use `is_eol()` to determine whether
   such a version has reached end-of-life.
+- Moved documentation from README file to a Read the Docs site
 
 v0.4.0 (2021-10-03)
 -------------------
