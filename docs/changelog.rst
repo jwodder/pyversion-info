@@ -3,8 +3,8 @@
 Changelog
 =========
 
-v1.0.0 (in development)
------------------------
+v1.0.0 (2021-11-04)
+-------------------
 - Support Python 3.10
 - Drop support for Python 3.6
 - Support for fetching information on PyPy versions has been added.  With it
