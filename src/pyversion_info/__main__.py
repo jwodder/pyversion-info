@@ -10,8 +10,8 @@ from . import (
     VersionInfo,
     __version__,
     parse_version,
-    unparse_version,
 )
+from .util import MajorVersion, MicroVersion, MinorVersion
 
 
 def map_exc_to_click(func: Callable) -> Callable:
@@ -134,20 +134,20 @@ def show(
     info = vd.pypy if py == "pypy" else vd.cpython
     v = parse_version(version)
     data: List[Tuple[str, str, Any]] = [
-        ("version", "Version", unparse_version(v)),
+        ("version", "Version", str(v)),
         # ("level", "Level", ---),
-        ("release_date", "Release-Date", info.release_date(version)),
-        ("is_released", "Is-Released", info.is_released(version)),
+        ("release_date", "Release-Date", info.release_date(v)),
+        ("is_released", "Is-Released", info.is_released(v)),
     ]
     if isinstance(info, CPythonVersionInfo):
-        data.append(("is_supported", "Is-Supported", info.is_supported(version)))
-    if len(v) == 1:
+        data.append(("is_supported", "Is-Supported", info.is_supported(v)))
+    if isinstance(v, MajorVersion):
         data.insert(1, ("level", "Level", "major"))
         data.append(
             (
                 "subversions",
                 "Subversions",
-                filter_versions(subversions, info, info.subversions(version)),
+                filter_versions(subversions, info, info.subversions(v)),
             )
         )
         if isinstance(info, PyPyVersionInfo):
@@ -156,20 +156,20 @@ def show(
                     "cpython_series",
                     "CPython-Series",
                     info.supported_cpython_series(
-                        version, released=subversions == "released"
+                        v, released=subversions == "released"
                     ),
                 )
             )
-    elif len(v) == 2:
+    elif isinstance(v, MinorVersion):
         data.insert(1, ("level", "Level", "minor"))
         if isinstance(info, CPythonVersionInfo):
-            data.append(("eol_date", "EOL-Date", info.eol_date(version)))
-            data.append(("is_eol", "Is-EOL", info.is_eol(version)))
+            data.append(("eol_date", "EOL-Date", info.eol_date(v)))
+            data.append(("is_eol", "Is-EOL", info.is_eol(v)))
         data.append(
             (
                 "subversions",
                 "Subversions",
-                filter_versions(subversions, info, info.subversions(version)),
+                filter_versions(subversions, info, info.subversions(v)),
             )
         )
         if isinstance(info, PyPyVersionInfo):
@@ -178,14 +178,15 @@ def show(
                     "cpython_series",
                     "CPython-Series",
                     info.supported_cpython_series(
-                        version, released=subversions == "released"
+                        v, released=subversions == "released"
                     ),
                 )
             )
     else:
+        assert isinstance(v, MicroVersion)
         data.insert(1, ("level", "Level", "micro"))
         if isinstance(info, PyPyVersionInfo):
-            data.append(("cpython", "CPython", info.supported_cpython(version)))
+            data.append(("cpython", "CPython", info.supported_cpython(v)))
     if do_json:
         print(json.dumps({k: v for k, _, v in data}, indent=4, default=str))
     else:
@@ -203,13 +204,13 @@ def show(
 
 def is_not_eol(pyvinfo: CPythonVersionInfo, version: str) -> bool:
     v = parse_version(version)
-    if len(v) == 1:
-        return not all(map(pyvinfo.is_eol, pyvinfo.subversions(version)))
-    elif len(v) == 2:
-        return not pyvinfo.is_eol(version)
+    if isinstance(v, MajorVersion):
+        return not all(map(pyvinfo.is_eol, pyvinfo.subversions(v)))
+    elif isinstance(v, MinorVersion):
+        return not pyvinfo.is_eol(v)
     else:
-        x, y, _ = v
-        return not pyvinfo.is_eol(unparse_version((x, y)))
+        assert isinstance(v, MicroVersion)
+        return not pyvinfo.is_eol(v.minor)
 
 
 def yes(version: str) -> bool:  # noqa: U100

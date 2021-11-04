@@ -19,7 +19,7 @@ Visit <https://github.com/jwodder/pyversion-info> or
 
 from __future__ import annotations
 
-__version__ = "1.0.0"
+__version__ = "1.1.0.dev1"
 __author__ = "John Thorvald Wodder II"
 __author_email__ = "pyversion-info@varonathe.org"
 __license__ = "MIT"
@@ -30,11 +30,13 @@ from dataclasses import dataclass
 from datetime import date, datetime
 import json
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Dict, List, Mapping, Optional, Union
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 from platformdirs import user_cache_dir
+from pydantic import parse_obj_as
 import requests
+from .util import MajorVersion, MicroVersion, MinorVersion, RawDatabase
 
 __all__ = [
     "CACHE_DIR",
@@ -111,14 +113,13 @@ class VersionDatabase:
         Parses a version database from a `dict` deserialized from a JSON
         document and returns a new `VersionDatabase` instance
         """
+        rawdb = RawDatabase.parse_obj(data)
         return cls(
-            last_modified=datetime.fromisoformat(data["last_modified"]),
+            last_modified=rawdb.last_modified,
             cpython=CPythonVersionInfo(
-                data["cpython"]["release_dates"], data["cpython"]["eol_dates"]
+                rawdb.cpython.release_dates, rawdb.cpython.eol_dates
             ),
-            pypy=PyPyVersionInfo(
-                data["pypy"]["release_dates"], data["pypy"]["cpython_versions"]
-            ),
+            pypy=PyPyVersionInfo(rawdb.pypy.release_dates, rawdb.pypy.cpython_versions),
         )
 
 
@@ -129,14 +130,13 @@ class VersionInfo:
     A base class for storing & querying versions and their release dates
     """
 
-    def __init__(self, release_dates: Mapping[str, Union[str, bool]]) -> None:
-        # `release_dates` must map X.Y.Z strings to ISO 8601 dates or booleans
-        self.release_dates: Dict[str, Union[date, bool]] = {
-            v: parse_date(d) for v, d in release_dates.items()
-        }
+    def __init__(self, release_dates: Mapping[MicroVersion, Union[date, bool]]) -> None:
+        self.release_dates: Dict[MicroVersion, Union[date, bool]] = dict(release_dates)
         self.version_trie: Dict[int, Dict[int, List[int]]] = OrderedDict()
-        for x, y, z in sorted(map(parse_version, release_dates.keys())):
-            self.version_trie.setdefault(x, OrderedDict()).setdefault(y, []).append(z)
+        for v in sorted(release_dates.keys()):
+            self.version_trie.setdefault(v.x, OrderedDict()).setdefault(v.y, []).append(
+                v.z
+            )
 
     def major_versions(self) -> List[str]:
         """
@@ -157,7 +157,7 @@ class VersionInfo:
         """
         minors: List[str] = []
         for major, subtrie in self.version_trie.items():
-            minors.extend(unparse_version((major, minor)) for minor in subtrie.keys())
+            minors.extend(f"{major}.{minor}" for minor in subtrie.keys())
         return minors
 
     def micro_versions(self) -> List[str]:
@@ -170,7 +170,7 @@ class VersionInfo:
         micros: List[str] = []
         for major, subtrie in self.version_trie.items():
             for minor, sublist in subtrie.items():
-                micros.extend(unparse_version((major, minor, mc)) for mc in sublist)
+                micros.extend(f"{major}.{minor}.{mc}" for mc in sublist)
         return micros
 
     def subversions(self, version: str) -> List[str]:
@@ -191,16 +191,12 @@ class VersionInfo:
         """
         v = parse_version(version)
         try:
-            if len(v) == 1:
-                subs = [
-                    unparse_version(v + (y,)) for y in self.version_trie[v[0]].keys()
-                ]
-            elif len(v) == 2:
-                subs = [
-                    unparse_version(v + (z,)) for z in self.version_trie[v[0]][v[1]]
-                ]
+            if isinstance(v, MajorVersion):
+                subs = [f"{v.x}.{y}" for y in self.version_trie[v.x].keys()]
+            elif isinstance(v, MinorVersion):
+                subs = [f"{v.x}.{v.y}.{z}" for z in self.version_trie[v.x][v.y]]
             else:
-                assert len(v) == 3
+                assert isinstance(v, MicroVersion)
                 raise ValueError(f"Micro versions do not have subversions: {version!r}")
         except KeyError:
             raise UnknownVersionError(version)
@@ -209,13 +205,15 @@ class VersionInfo:
     def _release_date(self, version: str) -> Union[date, bool]:
         v = parse_version(version)
         try:
-            if len(v) == 1:
-                y, zs = next(iter(self.version_trie[v[0]].items()))
-                v += (y, zs[0])
-            elif len(v) == 2:
-                v += (self.version_trie[v[0]][v[1]][0],)
-            vstr = unparse_version(v)
-            return self.release_dates[vstr]
+            if isinstance(v, MajorVersion):
+                y, zs = next(iter(self.version_trie[v.x].items()))
+                m = MicroVersion.construct(v.x, y, zs[0])
+            elif isinstance(v, MinorVersion):
+                m = MicroVersion.construct(v.x, v.y, self.version_trie[v.x][v.y][0])
+            else:
+                assert isinstance(v, MicroVersion)
+                m = v
+            return self.release_dates[m]
         except KeyError:
             raise UnknownVersionError(version)
 
@@ -273,13 +271,11 @@ class CPythonVersionInfo(VersionInfo):
 
     def __init__(
         self,
-        release_dates: Mapping[str, Union[str, bool]],
-        eol_dates: Mapping[str, Union[str, bool]],
+        release_dates: Mapping[MicroVersion, Union[date, bool]],
+        eol_dates: Mapping[MinorVersion, Union[date, bool]],
     ) -> None:
         super().__init__(release_dates)
-        self.eol_dates: Dict[str, Union[date, bool]] = {
-            v: parse_date(d) for v, d in eol_dates.items()
-        }
+        self.eol_dates: Dict[MinorVersion, Union[date, bool]] = dict(eol_dates)
 
     def supported_series(self) -> List[str]:
         """
@@ -295,11 +291,11 @@ class CPythonVersionInfo(VersionInfo):
 
     def _eol_date(self, series: str) -> Union[date, bool]:
         try:
-            x, y = map(int, series.split("."))
+            v = MinorVersion.parse(series)
         except ValueError:
             raise ValueError(f"Invalid series name: {series!r}")
         try:
-            return self.eol_dates[f"{x}.{y}"]
+            return self.eol_dates[v]
         except KeyError:
             raise UnknownVersionError(series)
 
@@ -355,17 +351,15 @@ class CPythonVersionInfo(VersionInfo):
             the database
         """
         v = parse_version(version)
-        if len(v) == 1:
-            return any(map(self.is_supported, self.subversions(version)))
-        elif len(v) == 2:
-            return (not self.is_eol(version)) and any(
-                map(self.is_released, self.subversions(version))
+        if isinstance(v, MajorVersion):
+            return any(map(self.is_supported, self.subversions(v)))
+        elif isinstance(v, MinorVersion):
+            return (not self.is_eol(v)) and any(
+                map(self.is_released, self.subversions(v))
             )
         else:
-            x, y, _ = v
-            return (not self.is_eol(unparse_version((x, y)))) and self.is_released(
-                version
-            )
+            assert isinstance(v, MicroVersion)
+            return (not self.is_eol(v.minor)) and self.is_released(version)
 
 
 class PyPyVersionInfo(VersionInfo):
@@ -378,13 +372,12 @@ class PyPyVersionInfo(VersionInfo):
 
     def __init__(
         self,
-        release_dates: Mapping[str, Union[str, bool]],
-        cpython_versions: Mapping[str, List[str]],
+        release_dates: Mapping[MicroVersion, Union[date, bool]],
+        cpython_versions: Mapping[MicroVersion, List[MicroVersion]],
     ) -> None:
         super().__init__(release_dates)
-        self.cpython_versions: Dict[str, List[str]] = {
-            v: sorted(versions, key=parse_version)
-            for v, versions in cpython_versions.items()
+        self.cpython_versions: Dict[MicroVersion, List[MicroVersion]] = {
+            v: sorted(versions) for v, versions in cpython_versions.items()
         }
 
     def supported_cpython(self, version: str) -> List[str]:
@@ -397,11 +390,11 @@ class PyPyVersionInfo(VersionInfo):
         :raises ValueError: if ``version`` is not a valid micro version string
         """
         try:
-            x, y, z = map(int, version.split("."))
+            v = MicroVersion.parse(version)
         except ValueError:
             raise ValueError(f"Invalid micro version: {version!r}")
         try:
-            return list(self.cpython_versions[f"{x}.{y}.{z}"])
+            return list(self.cpython_versions[v])
         except KeyError:
             raise UnknownVersionError(version)
 
@@ -426,23 +419,27 @@ class PyPyVersionInfo(VersionInfo):
         """
         v = parse_version(version)
         try:
-            if len(v) == 1:
-                (x,) = v
+            if isinstance(v, MajorVersion):
                 micros = [
-                    f"{x}.{y}.{z}" for y, zs in self.version_trie[x].items() for z in zs
+                    MicroVersion.construct(v.x, y, z)
+                    for y, zs in self.version_trie[v.x].items()
+                    for z in zs
                 ]
-            elif len(v) == 2:
-                x, y = v
-                micros = [f"{x}.{y}.{z}" for z in self.version_trie[x][y]]
+            elif isinstance(v, MinorVersion):
+                micros = [
+                    MicroVersion.construct(v.x, v.y, z)
+                    for z in self.version_trie[v.x][v.y]
+                ]
             else:
-                micros = [unparse_version(v)]
+                assert isinstance(v, MicroVersion)
+                micros = [v]
             series_set = {
-                parse_version(cpyv)[:2]
+                str(cpyv.minor)
                 for m in micros
                 if not released or self.is_released(m)
                 for cpyv in self.cpython_versions[m]
             }
-            return list(map(unparse_version, sorted(series_set)))
+            return sorted(series_set)
         except KeyError:
             raise UnknownVersionError(version)
 
@@ -457,39 +454,24 @@ class UnknownVersionError(ValueError):
 
     def __init__(self, version: str) -> None:
         #: The unknown version the caller asked about
-        self.version = version
+        self.version = str(version)
 
     def __str__(self) -> str:
         return f"Unknown version: {self.version!r}"
 
 
-def parse_date(s: Union[str, bool]) -> Union[date, bool]:
-    """
-    Convert a string of the form ``YYYY-MM-DD`` into a `datetime.date` object.
-    Booleans are passed through unaltered.
-    """
-    if isinstance(s, bool):
-        return s
-    else:
-        return date.fromisoformat(s)
-
-
-def parse_version(s: str) -> Tuple[int, ...]:
+def parse_version(s: str) -> Union[MajorVersion, MinorVersion, MicroVersion]:
     """
     Convert a version string of the form ``X``, ``X.Y``, or ``X.Y.Z`` to a
-    tuple of integers
+    `Version` instance
 
     :raises ValueError: if ``s`` is not a valid version string
     """
     try:
-        v = tuple(map(int, s.split(".")))
+        # <https://github.com/python/mypy/issues/4625>
+        v: Union[MajorVersion, MinorVersion, MicroVersion] = parse_obj_as(
+            Union[MajorVersion, MinorVersion, MicroVersion], s  # type: ignore[arg-type]
+        )
     except ValueError:
         raise ValueError(f"Invalid version string: {s!r}")
-    if len(v) < 1 or len(v) > 3:
-        raise ValueError(f"Invalid version string: {s!r}")
     return v
-
-
-def unparse_version(v: Iterable[int]) -> str:
-    """Convert a sequence of integers to a dot-separated string"""
-    return ".".join(map(str, v))

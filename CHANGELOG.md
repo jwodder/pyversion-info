@@ -1,3 +1,7 @@
+v1.1.0 (in development)
+-----------------------
+- Use pydantic internally for parsing & validating version databases
+
 v1.0.0 (2021-11-04)
 -------------------
 - Support Python 3.10
