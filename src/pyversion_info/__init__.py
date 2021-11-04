@@ -26,6 +26,7 @@ __url__ = "https://github.com/jwodder/pyversion-info"
 from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import date, datetime
+import json
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
 from cachecontrol import CacheControl
@@ -38,6 +39,7 @@ __all__ = [
     "PyPyVersionInfo",
     "UnknownVersionError",
     "VersionDatabase",
+    "VersionInfo",
 ]
 
 #: The default URL from which to download the version release data
@@ -76,6 +78,11 @@ class VersionDatabase:
             r = s.get(url)
             r.raise_for_status()
             return cls.parse_obj(r.json())
+
+    @classmethod
+    def parse_file(cls, filepath: Union[str, Path]) -> VersionDatabase:
+        with open(filepath, "rb") as fp:
+            return cls.parse_obj(json.load(fp))
 
     @classmethod
     def parse_obj(cls, data: dict) -> VersionDatabase:
@@ -365,10 +372,13 @@ class PyPyVersionInfo(VersionInfo):
         except KeyError:
             raise UnknownVersionError(version)
 
-    def supports_cpython_series(self, version: str) -> List[str]:
+    def supports_cpython_series(
+        self, version: str, released: bool = False
+    ) -> List[str]:
         """
         Given a PyPy version, returns a list of all CPython series supported by
-        that version or its subversions in version order.
+        that version or its subversions in version order.  If ``released`` is
+        true, only released versions are considered.
 
         >>> db.supports_cpython_series("7.3.5")
         ['2.7', '3.7']
@@ -396,6 +406,7 @@ class PyPyVersionInfo(VersionInfo):
             series_set = {
                 parse_version(cpyv)[:2]
                 for m in micros
+                if not released or self.is_released(m)
                 for cpyv in self.cpython_versions[m]
             }
             return list(map(unparse_version, sorted(series_set)))

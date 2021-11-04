@@ -1,8 +1,15 @@
 from typing import List
 import pytest
+from pytest_mock import MockerFixture
 from pyversion_info import PyPyVersionInfo, UnknownVersionError, VersionDatabase
 
 INVALID_VERSIONS = ["", "1.2.3.4", "1.2.3rc1", "foobar", "a.b.c"]
+
+
+@pytest.fixture(autouse=True)
+def use_fixed_date(mocker: MockerFixture) -> None:
+    mocker.patch("time.time", return_value=1635992101)
+    # Time is now 2021-11-04T02:15:01+00:00.
 
 
 @pytest.fixture(scope="module")
@@ -76,7 +83,7 @@ def test_supports_cpython_invalid(pypyinfo: PyPyVersionInfo, v: str) -> None:
     assert str(excinfo.value) == f"Invalid micro version: {v!r}"
 
 
-@pytest.mark.parametrize("v", ["0.8.0", "1.5.0", "3.0.0", "7.4.0", "8.0.0"])
+@pytest.mark.parametrize("v", ["0.8.0", "1.5.0", "3.0.0", "7.3.9", "9.0.0"])
 def test_supports_cpython_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
         pypyinfo.supports_cpython(v)
@@ -89,7 +96,7 @@ def test_supports_cpython_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
     [
         ("7.3.5", ["2.7", "3.7"]),
         ("7.3", ["2.7", "3.6", "3.7", "3.8"]),
-        ("7", ["2.7", "3.5", "3.6", "3.7", "3.8"]),
+        ("7", ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9"]),
     ],
 )
 def test_supports_cpython_series(
@@ -105,7 +112,7 @@ def test_supports_cpython_series_invalid(pypyinfo: PyPyVersionInfo, v: str) -> N
     assert str(excinfo.value) == f"Invalid version string: {v!r}"
 
 
-@pytest.mark.parametrize("v", ["0.8", "1.5", "3", "7.3.9", "8.0.0"])
+@pytest.mark.parametrize("v", ["0.8", "1.5", "3", "7.3.9", "9.0.0"])
 def test_supports_cpython_series_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
         pypyinfo.supports_cpython_series(v)

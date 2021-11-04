@@ -5,9 +5,21 @@ from typing import List
 import click
 from click.testing import CliRunner, Result
 import pytest
+from pytest_mock import MockerFixture
 from pyversion_info.__main__ import main
 
 DATA_FILE = str(Path(__file__).with_name("data") / "pyversion-info-data.json")
+
+
+@pytest.fixture(autouse=True)
+def use_fixed_date(mocker: MockerFixture) -> None:
+    # Mocking/monkeypatching just the `today()` method of `date` doesn't seem
+    # to be an option, and monkeypatching the `date` class with a custom class
+    # that just implements `today()` causes problems on PyPy.  Fortunately,
+    # both CPython and PyPy implement `date.today()` by calling `time.time()`,
+    # so we just need to mock that and hope the implementation never changes.
+    mocker.patch("time.time", return_value=1556052408)
+    # Time is now 2019-04-23T16:46:48-04:00.
 
 
 def show_result(r: Result) -> str:
@@ -526,9 +538,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 1\n"
                 "Level: major\n"
-                "Release-date: 1994-01-26\n"
-                "Is-released: yes\n"
-                "Is-supported: no\n"
+                "Release-Date: 1994-01-26\n"
+                "Is-Released: yes\n"
+                "Is-Supported: no\n"
                 "Subversions: 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6\n"
             ),
         ),
@@ -546,9 +558,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 1\n"
                 "Level: major\n"
-                "Release-date: 1994-01-26\n"
-                "Is-released: yes\n"
-                "Is-supported: no\n"
+                "Release-Date: 1994-01-26\n"
+                "Is-Released: yes\n"
+                "Is-Supported: no\n"
                 "Subversions: 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6\n"
             ),
         ),
@@ -566,9 +578,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 1\n"
                 "Level: major\n"
-                "Release-date: 1994-01-26\n"
-                "Is-released: yes\n"
-                "Is-supported: no\n"
+                "Release-Date: 1994-01-26\n"
+                "Is-Released: yes\n"
+                "Is-Supported: no\n"
                 "Subversions: \n"
             ),
         ),
@@ -586,9 +598,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 1\n"
                 "Level: major\n"
-                "Release-date: 1994-01-26\n"
-                "Is-released: yes\n"
-                "Is-supported: no\n"
+                "Release-Date: 1994-01-26\n"
+                "Is-Released: yes\n"
+                "Is-Supported: no\n"
                 "Subversions: \n"
             ),
         ),
@@ -606,9 +618,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 2\n"
                 "Level: major\n"
-                "Release-date: 2000-10-16\n"
-                "Is-released: yes\n"
-                "Is-supported: yes\n"
+                "Release-Date: 2000-10-16\n"
+                "Is-Released: yes\n"
+                "Is-Supported: yes\n"
                 "Subversions: 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7\n"
             ),
         ),
@@ -626,9 +638,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 2\n"
                 "Level: major\n"
-                "Release-date: 2000-10-16\n"
-                "Is-released: yes\n"
-                "Is-supported: yes\n"
+                "Release-Date: 2000-10-16\n"
+                "Is-Released: yes\n"
+                "Is-Supported: yes\n"
                 "Subversions: 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7\n"
             ),
         ),
@@ -646,9 +658,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 2\n"
                 "Level: major\n"
-                "Release-date: 2000-10-16\n"
-                "Is-released: yes\n"
-                "Is-supported: yes\n"
+                "Release-Date: 2000-10-16\n"
+                "Is-Released: yes\n"
+                "Is-Supported: yes\n"
                 "Subversions: 2.7\n"
             ),
         ),
@@ -666,9 +678,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 2\n"
                 "Level: major\n"
-                "Release-date: 2000-10-16\n"
-                "Is-released: yes\n"
-                "Is-supported: yes\n"
+                "Release-Date: 2000-10-16\n"
+                "Is-Released: yes\n"
+                "Is-Supported: yes\n"
                 "Subversions: 2.7\n"
             ),
         ),
@@ -696,10 +708,10 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 2.5\n"
                 "Level: minor\n"
-                "Release-date: 2006-09-19\n"
-                "Is-released: yes\n"
-                "Is-supported: no\n"
-                "EOL-date: UNKNOWN\n"
+                "Release-Date: 2006-09-19\n"
+                "Is-Released: yes\n"
+                "Is-Supported: no\n"
+                "EOL-Date: UNKNOWN\n"
                 "Is-EOL: yes\n"
                 "Subversions: 2.5.0, 2.5.1, 2.5.2, 2.5.3, 2.5.4, 2.5.5, 2.5.6\n"
             ),
@@ -731,10 +743,10 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 2.6\n"
                 "Level: minor\n"
-                "Release-date: 2008-10-02\n"
-                "Is-released: yes\n"
-                "Is-supported: no\n"
-                "EOL-date: 2013-10-29\n"
+                "Release-Date: 2008-10-02\n"
+                "Is-Released: yes\n"
+                "Is-Supported: no\n"
+                "EOL-Date: 2013-10-29\n"
                 "Is-EOL: yes\n"
                 "Subversions: 2.6.0, 2.6.1, 2.6.2, 2.6.3, 2.6.4, 2.6.5, 2.6.6,"
                 " 2.6.7, 2.6.8, 2.6.9\n"
@@ -767,10 +779,10 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 2.6\n"
                 "Level: minor\n"
-                "Release-date: 2008-10-02\n"
-                "Is-released: yes\n"
-                "Is-supported: no\n"
-                "EOL-date: 2013-10-29\n"
+                "Release-Date: 2008-10-02\n"
+                "Is-Released: yes\n"
+                "Is-Supported: no\n"
+                "EOL-Date: 2013-10-29\n"
                 "Is-EOL: yes\n"
                 "Subversions: 2.6.0, 2.6.1, 2.6.2, 2.6.3, 2.6.4, 2.6.5, 2.6.6,"
                 " 2.6.7, 2.6.8, 2.6.9\n"
@@ -792,10 +804,10 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 2.6\n"
                 "Level: minor\n"
-                "Release-date: 2008-10-02\n"
-                "Is-released: yes\n"
-                "Is-supported: no\n"
-                "EOL-date: 2013-10-29\n"
+                "Release-Date: 2008-10-02\n"
+                "Is-Released: yes\n"
+                "Is-Supported: no\n"
+                "EOL-Date: 2013-10-29\n"
                 "Is-EOL: yes\n"
                 "Subversions: \n"
             ),
@@ -816,10 +828,10 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 2.6\n"
                 "Level: minor\n"
-                "Release-date: 2008-10-02\n"
-                "Is-released: yes\n"
-                "Is-supported: no\n"
-                "EOL-date: 2013-10-29\n"
+                "Release-Date: 2008-10-02\n"
+                "Is-Released: yes\n"
+                "Is-Supported: no\n"
+                "EOL-Date: 2013-10-29\n"
                 "Is-EOL: yes\n"
                 "Subversions: \n"
             ),
@@ -858,10 +870,10 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 2.7\n"
                 "Level: minor\n"
-                "Release-date: 2010-07-03\n"
-                "Is-released: yes\n"
-                "Is-supported: yes\n"
-                "EOL-date: 2020-01-01\n"
+                "Release-Date: 2010-07-03\n"
+                "Is-Released: yes\n"
+                "Is-Supported: yes\n"
+                "EOL-Date: 2020-01-01\n"
                 "Is-EOL: no\n"
                 "Subversions: 2.7.0, 2.7.1, 2.7.2, 2.7.3, 2.7.4, 2.7.5, 2.7.6,"
                 " 2.7.7, 2.7.8, 2.7.9, 2.7.10, 2.7.11, 2.7.12, 2.7.13, 2.7.14,"
@@ -882,9 +894,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 3\n"
                 "Level: major\n"
-                "Release-date: 2008-12-03\n"
-                "Is-released: yes\n"
-                "Is-supported: yes\n"
+                "Release-Date: 2008-12-03\n"
+                "Is-Released: yes\n"
+                "Is-Supported: yes\n"
                 "Subversions: 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7\n"
             ),
         ),
@@ -912,9 +924,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 3\n"
                 "Level: major\n"
-                "Release-date: 2008-12-03\n"
-                "Is-released: yes\n"
-                "Is-supported: yes\n"
+                "Release-Date: 2008-12-03\n"
+                "Is-Released: yes\n"
+                "Is-Supported: yes\n"
                 "Subversions: 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8\n"
             ),
         ),
@@ -932,9 +944,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 3\n"
                 "Level: major\n"
-                "Release-date: 2008-12-03\n"
-                "Is-released: yes\n"
-                "Is-supported: yes\n"
+                "Release-Date: 2008-12-03\n"
+                "Is-Released: yes\n"
+                "Is-Supported: yes\n"
                 "Subversions: 3.5, 3.6, 3.7, 3.8\n"
             ),
         ),
@@ -952,9 +964,9 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 3\n"
                 "Level: major\n"
-                "Release-date: 2008-12-03\n"
-                "Is-released: yes\n"
-                "Is-supported: yes\n"
+                "Release-Date: 2008-12-03\n"
+                "Is-Released: yes\n"
+                "Is-Supported: yes\n"
                 "Subversions: 3.5, 3.6, 3.7\n"
             ),
         ),
@@ -974,10 +986,10 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 3.8\n"
                 "Level: minor\n"
-                "Release-date: 2019-10-21\n"
-                "Is-released: no\n"
-                "Is-supported: no\n"
-                "EOL-date: 2024-10-01\n"
+                "Release-Date: 2019-10-21\n"
+                "Is-Released: no\n"
+                "Is-Supported: no\n"
+                "EOL-Date: 2024-10-01\n"
                 "Is-EOL: no\n"
                 "Subversions: \n"
             ),
@@ -998,10 +1010,10 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 3.8\n"
                 "Level: minor\n"
-                "Release-date: 2019-10-21\n"
-                "Is-released: no\n"
-                "Is-supported: no\n"
-                "EOL-date: 2024-10-01\n"
+                "Release-Date: 2019-10-21\n"
+                "Is-Released: no\n"
+                "Is-Supported: no\n"
+                "EOL-Date: 2024-10-01\n"
                 "Is-EOL: no\n"
                 "Subversions: 3.8.0\n"
             ),
@@ -1022,10 +1034,10 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 3.8\n"
                 "Level: minor\n"
-                "Release-date: 2019-10-21\n"
-                "Is-released: no\n"
-                "Is-supported: no\n"
-                "EOL-date: 2024-10-01\n"
+                "Release-Date: 2019-10-21\n"
+                "Is-Released: no\n"
+                "Is-Supported: no\n"
+                "EOL-Date: 2024-10-01\n"
                 "Is-EOL: no\n"
                 "Subversions: \n"
             ),
@@ -1046,10 +1058,10 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
             (
                 "Version: 3.8\n"
                 "Level: minor\n"
-                "Release-date: 2019-10-21\n"
-                "Is-released: no\n"
-                "Is-supported: no\n"
-                "EOL-date: 2024-10-01\n"
+                "Release-Date: 2019-10-21\n"
+                "Is-Released: no\n"
+                "Is-Supported: no\n"
+                "EOL-Date: 2024-10-01\n"
                 "Is-EOL: no\n"
                 "Subversions: 3.8.0\n"
             ),
@@ -1088,9 +1100,9 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
             (
                 "Version: 0.9.2\n"
                 "Level: micro\n"
-                "Release-date: UNKNOWN\n"
-                "Is-released: yes\n"
-                "Is-supported: no\n"
+                "Release-Date: UNKNOWN\n"
+                "Is-Released: yes\n"
+                "Is-Supported: no\n"
             ),
         ),
         (
@@ -1105,9 +1117,9 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
             (
                 "Version: 3.3.2\n"
                 "Level: micro\n"
-                "Release-date: 2013-05-15\n"
-                "Is-released: yes\n"
-                "Is-supported: no\n"
+                "Release-Date: 2013-05-15\n"
+                "Is-Released: yes\n"
+                "Is-Supported: no\n"
             ),
         ),
         (
@@ -1122,9 +1134,9 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
             (
                 "Version: 3.6.1\n"
                 "Level: micro\n"
-                "Release-date: 2017-03-21\n"
-                "Is-released: yes\n"
-                "Is-supported: yes\n"
+                "Release-Date: 2017-03-21\n"
+                "Is-Released: yes\n"
+                "Is-Supported: yes\n"
             ),
         ),
         (
@@ -1139,9 +1151,9 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
             (
                 "Version: 3.7.4\n"
                 "Level: micro\n"
-                "Release-date: 2019-06-24\n"
-                "Is-released: no\n"
-                "Is-supported: no\n"
+                "Release-Date: 2019-06-24\n"
+                "Is-Released: no\n"
+                "Is-Supported: no\n"
             ),
         ),
     ],

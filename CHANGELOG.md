@@ -11,6 +11,8 @@ v1.0.0 (in development)
     - A new `VersionDatabase` class has been added, containing a
       `CPythonVersionInfo` instance and a `PyPyVersionInfo` instance
     - `get_pyversion_info()` is now `VersionDatabase.fetch()`
+    - The command-line interface now takes a `--pypy` option for showing
+      details about PyPy versions
 - The `unreleased` argument to `major_versions()`, `minor_versions()`,
   `micro_versions()`, and `subversions()` has been removed; the methods now
   return all known versions, released & unreleased

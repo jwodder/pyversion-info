@@ -1,12 +1,13 @@
 from datetime import date
 from functools import partial, wraps
 import json
-import re
-from typing import Any, Callable, Dict, Iterator, List, Optional
+from typing import Any, Callable, List, Optional, Tuple
 import click
 from . import (
     CPythonVersionInfo,
+    PyPyVersionInfo,
     VersionDatabase,
+    VersionInfo,
     __version__,
     parse_version,
     unparse_version,
@@ -41,23 +42,34 @@ def map_exc_to_click(func: Callable) -> Callable:
 def main(ctx: click.Context, database: Optional[str]) -> None:
     """Show details about Python versions"""
     if database is None:
-        vd = VersionDatabase.fetch()
+        ctx.obj = VersionDatabase.fetch()
     elif database.lower().startswith(("http://", "https://")):
-        vd = VersionDatabase.fetch(database)
+        ctx.obj = VersionDatabase.fetch(database)
     else:
-        with open(database, "rb") as fp:
-            vd = VersionDatabase.parse_obj(json.load(fp))
-    ctx.obj = vd.cpython
+        ctx.obj = VersionDatabase.parse_file(database)
 
 
 @main.command("list")
 @click.option("-a", "--all", "mode", flag_value="all", help="List all known versions")
+@click.option(
+    "--cpython",
+    "py",
+    flag_value="cpython",
+    help="Show information about CPython versions  [default]",
+    default=True,
+)
 @click.option(
     "-n",
     "--not-eol",
     "mode",
     flag_value="not-eol",
     help="List only versions that are not EOL (supported versions + unreleased versions)",
+)
+@click.option(
+    "--pypy",
+    "py",
+    flag_value="pypy",
+    help="Show information about PyPy versions",
 )
 @click.option(
     "-r",
@@ -77,19 +89,33 @@ def main(ctx: click.Context, database: Optional[str]) -> None:
 @click.argument("level", type=click.Choice(["major", "minor", "micro"]))
 @click.pass_obj
 @map_exc_to_click
-def list_cmd(pyvinfo: CPythonVersionInfo, level: str, mode: str) -> None:
+def list_cmd(vd: VersionDatabase, level: str, mode: str, py: str) -> None:
     """List known versions at the given version level"""
+    info = vd.pypy if py == "pypy" else vd.cpython
     func = {
-        "major": pyvinfo.major_versions,
-        "minor": pyvinfo.minor_versions,
-        "micro": pyvinfo.micro_versions,
+        "major": info.major_versions,
+        "minor": info.minor_versions,
+        "micro": info.micro_versions,
     }[level]
-    for v in filter_versions(mode, pyvinfo, func()):
+    for v in filter_versions(mode, info, func()):
         print(v)
 
 
 @main.command()
+@click.option(
+    "--cpython",
+    "py",
+    flag_value="cpython",
+    help="Show information about CPython versions  [default]",
+    default=True,
+)
 @click.option("-J", "--json", "do_json", is_flag=True, help="Output JSON")
+@click.option(
+    "--pypy",
+    "py",
+    flag_value="pypy",
+    help="Show information about PyPy versions",
+)
 @click.option(
     "-S",
     "--subversions",
@@ -102,45 +128,76 @@ def list_cmd(pyvinfo: CPythonVersionInfo, level: str, mode: str) -> None:
 @click.pass_obj
 @map_exc_to_click
 def show(
-    pyvinfo: CPythonVersionInfo, version: str, subversions: str, do_json: bool
+    vd: VersionDatabase, version: str, subversions: str, do_json: bool, py: str
 ) -> None:
     """Show information about a Python version"""
+    info = vd.pypy if py == "pypy" else vd.cpython
     v = parse_version(version)
-    data: Dict[str, Any] = {
-        "version": unparse_version(v),
-        "level": None,  # So it will show up on line 2
-        "release_date": pyvinfo.release_date(version),
-        "is_released": pyvinfo.is_released(version),
-        "is_supported": pyvinfo.is_supported(version),
-    }
+    data: List[Tuple[str, str, Any]] = [
+        ("version", "Version", unparse_version(v)),
+        # ("level", "Level", ---),
+        ("release_date", "Release-Date", info.release_date(version)),
+        ("is_released", "Is-Released", info.is_released(version)),
+    ]
+    if isinstance(info, CPythonVersionInfo):
+        data.append(("is_supported", "Is-Supported", info.is_supported(version)))
     if len(v) == 1:
-        data["level"] = "major"
-        data["subversions"] = list(
-            filter_versions(subversions, pyvinfo, pyvinfo.subversions(version))
+        data.insert(1, ("level", "Level", "major"))
+        data.append(
+            (
+                "subversions",
+                "Subversions",
+                filter_versions(subversions, info, info.subversions(version)),
+            )
         )
+        if isinstance(info, PyPyVersionInfo):
+            data.append(
+                (
+                    "cpython_series",
+                    "CPython-Series",
+                    info.supports_cpython_series(
+                        version, released=subversions == "released"
+                    ),
+                )
+            )
     elif len(v) == 2:
-        data["level"] = "minor"
-        data["eol_date"] = pyvinfo.eol_date(version)
-        data["is_eol"] = pyvinfo.is_eol(version)
-        data["subversions"] = list(
-            filter_versions(subversions, pyvinfo, pyvinfo.subversions(version))
+        data.insert(1, ("level", "Level", "minor"))
+        if isinstance(info, CPythonVersionInfo):
+            data.append(("eol_date", "EOL-Date", info.eol_date(version)))
+            data.append(("is_eol", "Is-EOL", info.is_eol(version)))
+        data.append(
+            (
+                "subversions",
+                "Subversions",
+                filter_versions(subversions, info, info.subversions(version)),
+            )
         )
+        if isinstance(info, PyPyVersionInfo):
+            data.append(
+                (
+                    "cpython_series",
+                    "CPython-Series",
+                    info.supports_cpython_series(
+                        version, released=subversions == "released"
+                    ),
+                )
+            )
     else:
-        data["level"] = "micro"
+        data.insert(1, ("level", "Level", "micro"))
+        if isinstance(info, PyPyVersionInfo):
+            data.append(("cpython", "CPython", info.supports_cpython(version)))
     if do_json:
-        print(json.dumps(data, indent=4, default=str))
+        print(json.dumps({k: v for k, _, v in data}, indent=4, default=str))
     else:
-        for k, val in data.items():
-            label = re.sub(r"[Ee]ol", "EOL", k.replace("_", "-").capitalize())
-            if k in ("release_date", "eol_date"):
-                if isinstance(val, date):
-                    val = str(val)
-                else:
-                    val = "UNKNOWN"
+        for _, label, val in data:
+            if isinstance(val, date):
+                val = str(val)
             elif isinstance(val, bool):
                 val = "yes" if val else "no"
             elif isinstance(val, list):
                 val = ", ".join(val)
+            elif val is None:
+                val = "UNKNOWN"
             print(f"{label}: {val}")
 
 
@@ -159,20 +216,22 @@ def yes(version: str) -> bool:  # noqa: U100
     return True
 
 
-def filter_versions(
-    mode: str, pyvinfo: CPythonVersionInfo, versions: List[str]
-) -> Iterator[str]:
+def filter_versions(mode: str, info: VersionInfo, versions: List[str]) -> List[str]:
     if mode == "all":
         filterer = yes
     elif mode == "released":
-        filterer = pyvinfo.is_released
+        filterer = info.is_released
     elif mode == "supported":
-        filterer = pyvinfo.is_supported
+        if not isinstance(info, CPythonVersionInfo):
+            raise click.UsageError("'supported' only applies to CPython versions")
+        filterer = info.is_supported
     elif mode == "not-eol":
-        filterer = partial(is_not_eol, pyvinfo)
+        if not isinstance(info, CPythonVersionInfo):
+            raise click.UsageError("'not-eol' only applies to CPython versions")
+        filterer = partial(is_not_eol, info)
     else:
         raise AssertionError(f"Unexpected mode: {mode!r}")  # pragma: no cover
-    return filter(filterer, versions)
+    return list(filter(filterer, versions))
 
 
 if __name__ == "__main__":
