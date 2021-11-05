@@ -647,6 +647,11 @@ def test_eol_date(
     assert pyvinfo.eol_date(version) == eol
 
 
+def test_eol_date_recent(mocker: MockerFixture, pyvinfo: CPythonVersionInfo) -> None:
+    mocker.patch("time.time", return_value=1635992101)
+    assert pyvinfo.eol_date("2") == date(2020, 1, 1)
+
+
 @pytest.mark.parametrize("v", INVALID_VERSIONS)
 def test_eol_date_invalid(pyvinfo: CPythonVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
@@ -702,6 +707,11 @@ def test_eol_date_unknown(pyvinfo: CPythonVersionInfo, v: str) -> None:
 )
 def test_is_eol(pyvinfo: CPythonVersionInfo, version: str, is_eol: bool) -> None:
     assert pyvinfo.is_eol(version) is is_eol
+
+
+def test_is_eol_recent(mocker: MockerFixture, pyvinfo: CPythonVersionInfo) -> None:
+    mocker.patch("time.time", return_value=1635992101)
+    assert pyvinfo.is_eol("2") is True
 
 
 @pytest.mark.parametrize("v", INVALID_VERSIONS)
