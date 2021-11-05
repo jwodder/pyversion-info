@@ -203,14 +203,7 @@ def show(
 
 
 def is_not_eol(pyvinfo: CPythonVersionInfo, version: str) -> bool:
-    v = parse_version(version)
-    if isinstance(v, MajorVersion):
-        return not all(map(pyvinfo.is_eol, pyvinfo.subversions(v)))
-    elif isinstance(v, MinorVersion):
-        return not pyvinfo.is_eol(v)
-    else:
-        assert isinstance(v, MicroVersion)
-        return not pyvinfo.is_eol(v.minor)
+    return not pyvinfo.is_eol(version)
 
 
 def yes(version: str) -> bool:  # noqa: U100

@@ -289,34 +289,54 @@ class CPythonVersionInfo(VersionInfo):
             if self.is_released(v) and not self.is_eol(v)
         ]
 
-    def _eol_date(self, series: str) -> Union[date, bool]:
+    def _eol_date(self, version: str) -> Union[date, bool]:
+        v = parse_version(version)
         try:
-            v = MinorVersion.parse(series)
-        except ValueError:
-            raise ValueError(f"Invalid series name: {series!r}")
-        try:
-            return self.eol_dates[v]
+            if isinstance(v, MajorVersion):
+                subdates = [
+                    self.eol_dates[MinorVersion.construct(v.x, y)]
+                    for y in self.version_trie[v.x].keys()
+                ]
+                if all(
+                    (isinstance(d, date) and d <= date.today()) or d is True
+                    for d in subdates
+                ):
+                    return subdates[-1]
+                else:
+                    return False
+            elif isinstance(v, MinorVersion):
+                return self.eol_dates[v]
+            else:
+                assert isinstance(v, MicroVersion)
+                return self.eol_dates[v.minor]
         except KeyError:
-            raise UnknownVersionError(series)
+            raise UnknownVersionError(version)
 
-    def eol_date(self, series: str) -> Optional[date]:
+    def eol_date(self, version: str) -> Optional[date]:
         """
-        Returns the end-of-life date of the given CPython version series (i.e.,
-        a minor version like 3.5).  The return value may be `None`, indicating
-        that, though the series is known to the database, its EOL date is not;
-        use `is_eol()` to determine whether such a version has reached
-        end-of-life yet.
+        Returns the end-of-life date of the given CPython version.  The return
+        value may be `None`, indicating that, though the version is known to
+        the database, its EOL date is not; use `is_eol()` to determine whether
+        such a version has reached end-of-life yet.
+
+        For a major version, this method returns the EOL date of the last
+        subversion **if** every subversion is already end-of-life; otherwise,
+        it returns `None`.  For a micro version, this returns the EOL date of
+        the corresponding minor version.
 
         .. versionchanged:: 1.0.0
             Unknown end-of-life dates are now always returned as `None`
 
-        :param str series: a Python version series/minor version number
+        .. versionchanged:: 1.1.0
+            Major and micro versions are now accepted
+
+        :param str version: the version to fetch the end-of-life date of
         :rtype: Optional[datetime.date]
-        :raises UnknownVersionError: if there is no entry for ``series`` in the
-            end-of-life table
-        :raises ValueError: if ``series`` is not a valid minor version string
+        :raises UnknownVersionError: if there is no entry for ``version`` in
+            the end-of-life table
+        :raises ValueError: if ``version`` is not a valid version string
         """
-        d = self._eol_date(series)
+        d = self._eol_date(version)
         if isinstance(d, date):
             return d
         else:
@@ -324,13 +344,19 @@ class CPythonVersionInfo(VersionInfo):
 
     def is_eol(self, series: str) -> bool:
         """
-        Returns whether the given version series has reached end-of-life yet
+        Returns whether the given version has reached end-of-life yet.  For a
+        major version, this is whether every subversion has reached
+        end-of-life.  For a micro version, this is whether the corresponding
+        minor version has reached end-of-life.
 
-        :param str series: a Python version series/minor version number
+        .. versionchanged:: 1.1.0
+            Major and micro versions are now accepted
+
+        :param str series: a Python version number
         :rtype: bool
-        :raises UnknownVersionError: if there is no entry for ``series`` in the
-            end-of-life table
-        :raises ValueError: if ``series`` is not a valid minor version string
+        :raises UnknownVersionError: if there is no entry for ``version`` in
+            the end-of-life table
+        :raises ValueError: if ``version`` is not a valid version string
         """
         d = self._eol_date(series)
         if isinstance(d, date):
