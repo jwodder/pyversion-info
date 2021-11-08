@@ -3,8 +3,8 @@
 Changelog
 =========
 
-v1.1.0 (in development)
------------------------
+v1.1.0 (2021-11-08)
+-------------------
 - Use pydantic internally for parsing & validating version databases
 - `~CPythonVersionInfo.eol_date()` and `~CPythonVersionInfo.is_eol()` now
   accept major and micro versions

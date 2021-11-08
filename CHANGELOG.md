@@ -1,5 +1,5 @@
-v1.1.0 (in development)
------------------------
+v1.1.0 (2021-11-08)
+-------------------
 - Use pydantic internally for parsing & validating version databases
 - `eol_date()` and `is_eol()` now accept major and micro versions
 - The `show` command now outputs the EOL date and EOL state for all CPython
