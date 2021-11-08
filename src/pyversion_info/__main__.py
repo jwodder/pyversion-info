@@ -143,6 +143,9 @@ def show(
         data.append(("is_supported", "Is-Supported", info.is_supported(v)))
     if isinstance(v, MajorVersion):
         data.insert(1, ("level", "Level", "major"))
+        if isinstance(info, CPythonVersionInfo):
+            data.append(("eol_date", "EOL-Date", info.eol_date(v)))
+            data.append(("is_eol", "Is-EOL", info.is_eol(v)))
         data.append(
             (
                 "subversions",
@@ -185,6 +188,9 @@ def show(
     else:
         assert isinstance(v, MicroVersion)
         data.insert(1, ("level", "Level", "micro"))
+        if isinstance(info, CPythonVersionInfo):
+            data.append(("eol_date", "EOL-Date", info.eol_date(v)))
+            data.append(("is_eol", "Is-EOL", info.is_eol(v)))
         if isinstance(info, PyPyVersionInfo):
             data.append(("cpython", "CPython", info.supported_cpython(v)))
     if do_json:

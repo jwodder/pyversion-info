@@ -533,6 +533,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "1994-01-26",
                 "is_released": True,
                 "is_supported": False,
+                "eol_date": None,
+                "is_eol": True,
                 "subversions": ["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"],
             },
             (
@@ -541,6 +543,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 1994-01-26\n"
                 "Is-Released: yes\n"
                 "Is-Supported: no\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: yes\n"
                 "Subversions: 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6\n"
             ),
         ),
@@ -553,6 +557,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "1994-01-26",
                 "is_released": True,
                 "is_supported": False,
+                "eol_date": None,
+                "is_eol": True,
                 "subversions": ["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"],
             },
             (
@@ -561,6 +567,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 1994-01-26\n"
                 "Is-Released: yes\n"
                 "Is-Supported: no\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: yes\n"
                 "Subversions: 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6\n"
             ),
         ),
@@ -573,6 +581,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "1994-01-26",
                 "is_released": True,
                 "is_supported": False,
+                "eol_date": None,
+                "is_eol": True,
                 "subversions": [],
             },
             (
@@ -581,6 +591,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 1994-01-26\n"
                 "Is-Released: yes\n"
                 "Is-Supported: no\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: yes\n"
                 "Subversions: \n"
             ),
         ),
@@ -593,6 +605,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "1994-01-26",
                 "is_released": True,
                 "is_supported": False,
+                "eol_date": None,
+                "is_eol": True,
                 "subversions": [],
             },
             (
@@ -601,6 +615,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 1994-01-26\n"
                 "Is-Released: yes\n"
                 "Is-Supported: no\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: yes\n"
                 "Subversions: \n"
             ),
         ),
@@ -613,6 +629,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "2000-10-16",
                 "is_released": True,
                 "is_supported": True,
+                "eol_date": None,
+                "is_eol": False,
                 "subversions": ["2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"],
             },
             (
@@ -621,6 +639,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 2000-10-16\n"
                 "Is-Released: yes\n"
                 "Is-Supported: yes\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: no\n"
                 "Subversions: 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7\n"
             ),
         ),
@@ -633,6 +653,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "2000-10-16",
                 "is_released": True,
                 "is_supported": True,
+                "eol_date": None,
+                "is_eol": False,
                 "subversions": ["2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"],
             },
             (
@@ -641,6 +663,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 2000-10-16\n"
                 "Is-Released: yes\n"
                 "Is-Supported: yes\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: no\n"
                 "Subversions: 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7\n"
             ),
         ),
@@ -653,6 +677,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "2000-10-16",
                 "is_released": True,
                 "is_supported": True,
+                "eol_date": None,
+                "is_eol": False,
                 "subversions": ["2.7"],
             },
             (
@@ -661,6 +687,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 2000-10-16\n"
                 "Is-Released: yes\n"
                 "Is-Supported: yes\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: no\n"
                 "Subversions: 2.7\n"
             ),
         ),
@@ -673,6 +701,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "2000-10-16",
                 "is_released": True,
                 "is_supported": True,
+                "eol_date": None,
+                "is_eol": False,
                 "subversions": ["2.7"],
             },
             (
@@ -681,6 +711,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 2000-10-16\n"
                 "Is-Released: yes\n"
                 "Is-Supported: yes\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: no\n"
                 "Subversions: 2.7\n"
             ),
         ),
@@ -889,6 +921,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "2008-12-03",
                 "is_released": True,
                 "is_supported": True,
+                "eol_date": None,
+                "is_eol": False,
                 "subversions": ["3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7"],
             },
             (
@@ -897,6 +931,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 2008-12-03\n"
                 "Is-Released: yes\n"
                 "Is-Supported: yes\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: no\n"
                 "Subversions: 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7\n"
             ),
         ),
@@ -909,6 +945,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "2008-12-03",
                 "is_released": True,
                 "is_supported": True,
+                "eol_date": None,
+                "is_eol": False,
                 "subversions": [
                     "3.0",
                     "3.1",
@@ -927,6 +965,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 2008-12-03\n"
                 "Is-Released: yes\n"
                 "Is-Supported: yes\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: no\n"
                 "Subversions: 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8\n"
             ),
         ),
@@ -939,6 +979,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "2008-12-03",
                 "is_released": True,
                 "is_supported": True,
+                "eol_date": None,
+                "is_eol": False,
                 "subversions": ["3.5", "3.6", "3.7", "3.8"],
             },
             (
@@ -947,6 +989,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 2008-12-03\n"
                 "Is-Released: yes\n"
                 "Is-Supported: yes\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: no\n"
                 "Subversions: 3.5, 3.6, 3.7, 3.8\n"
             ),
         ),
@@ -959,6 +1003,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "release_date": "2008-12-03",
                 "is_released": True,
                 "is_supported": True,
+                "eol_date": None,
+                "is_eol": False,
                 "subversions": ["3.5", "3.6", "3.7"],
             },
             (
@@ -967,6 +1013,8 @@ def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
                 "Release-Date: 2008-12-03\n"
                 "Is-Released: yes\n"
                 "Is-Supported: yes\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: no\n"
                 "Subversions: 3.5, 3.6, 3.7\n"
             ),
         ),
@@ -1096,6 +1144,8 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
                 "release_date": None,
                 "is_released": True,
                 "is_supported": False,
+                "eol_date": None,
+                "is_eol": True,
             },
             (
                 "Version: 0.9.2\n"
@@ -1103,6 +1153,8 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
                 "Release-Date: UNKNOWN\n"
                 "Is-Released: yes\n"
                 "Is-Supported: no\n"
+                "EOL-Date: UNKNOWN\n"
+                "Is-EOL: yes\n"
             ),
         ),
         (
@@ -1113,6 +1165,8 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
                 "release_date": "2013-05-15",
                 "is_released": True,
                 "is_supported": False,
+                "eol_date": "2017-09-29",
+                "is_eol": True,
             },
             (
                 "Version: 3.3.2\n"
@@ -1120,6 +1174,8 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
                 "Release-Date: 2013-05-15\n"
                 "Is-Released: yes\n"
                 "Is-Supported: no\n"
+                "EOL-Date: 2017-09-29\n"
+                "Is-EOL: yes\n"
             ),
         ),
         (
@@ -1130,6 +1186,8 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
                 "release_date": "2017-03-21",
                 "is_released": True,
                 "is_supported": True,
+                "eol_date": "2021-12-23",
+                "is_eol": False,
             },
             (
                 "Version: 3.6.1\n"
@@ -1137,6 +1195,8 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
                 "Release-Date: 2017-03-21\n"
                 "Is-Released: yes\n"
                 "Is-Supported: yes\n"
+                "EOL-Date: 2021-12-23\n"
+                "Is-EOL: no\n"
             ),
         ),
         (
@@ -1147,6 +1207,8 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
                 "release_date": "2019-06-24",
                 "is_released": False,
                 "is_supported": False,
+                "eol_date": "2023-06-27",
+                "is_eol": False,
             },
             (
                 "Version: 3.7.4\n"
@@ -1154,6 +1216,8 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
                 "Release-Date: 2019-06-24\n"
                 "Is-Released: no\n"
                 "Is-Supported: no\n"
+                "EOL-Date: 2023-06-27\n"
+                "Is-EOL: no\n"
             ),
         ),
     ],
@@ -1170,6 +1234,34 @@ def test_show_micro(version: str, subversions: str, data: dict, headers: str) ->
     )
     assert r.exit_code == 0, show_result(r)
     assert json.loads(r.output) == data
+
+
+def test_show_recent(mocker: MockerFixture) -> None:
+    mocker.patch("time.time", return_value=1635992101)
+    r = CliRunner().invoke(main, ["-d", DATA_FILE, "show", "2"])
+    assert r.exit_code == 0, show_result(r)
+    assert r.output == (
+        "Version: 2\n"
+        "Level: major\n"
+        "Release-Date: 2000-10-16\n"
+        "Is-Released: yes\n"
+        "Is-Supported: no\n"
+        "EOL-Date: 2020-01-01\n"
+        "Is-EOL: yes\n"
+        "Subversions: 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7\n"
+    )
+    r = CliRunner().invoke(main, ["-d", DATA_FILE, "show", "--json", "2"])
+    assert r.exit_code == 0, show_result(r)
+    assert json.loads(r.output) == {
+        "version": "2",
+        "level": "major",
+        "release_date": "2000-10-16",
+        "is_released": True,
+        "is_supported": False,
+        "eol_date": "2020-01-01",
+        "is_eol": True,
+        "subversions": ["2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"],
+    }
 
 
 @pytest.mark.parametrize("v", ["", "1.2.3.4", "1.2.3rc1", "foobar", "a.b.c"])

@@ -89,6 +89,8 @@ Sample outputs:
     Release-date: 2008-12-03
     Is-released: yes
     Is-supported: yes
+    EOL-Date: UNKNOWN
+    Is-EOL: no
     Subversions: 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9
 
 .. code:: console
@@ -111,6 +113,8 @@ Sample outputs:
     Release-date: 2021-05-03
     Is-released: yes
     Is-supported: yes
+    EOL-Date: 2025-10-01
+    Is-EOL: no
 
 .. code:: console
 
