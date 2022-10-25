@@ -3,6 +3,11 @@
 Changelog
 =========
 
+v1.2.0 (in development)
+-----------------------
+- Support Python 3.11
+
+
 v1.1.0 (2021-11-08)
 -------------------
 - Use pydantic internally for parsing & validating version databases

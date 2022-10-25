@@ -19,7 +19,7 @@ Visit <https://github.com/jwodder/pyversion-info> or
 
 from __future__ import annotations
 
-__version__ = "1.1.0"
+__version__ = "1.2.0.dev1"
 __author__ = "John Thorvald Wodder II"
 __author_email__ = "pyversion-info@varonathe.org"
 __license__ = "MIT"
