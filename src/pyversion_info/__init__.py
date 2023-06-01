@@ -19,7 +19,7 @@ Visit <https://github.com/jwodder/pyversion-info> or
 
 from __future__ import annotations
 
-__version__ = "1.2.0.dev1"
+__version__ = "1.1.1.dev1"
 __author__ = "John Thorvald Wodder II"
 __author_email__ = "pyversion-info@varonathe.org"
 __license__ = "MIT"
@@ -92,7 +92,7 @@ class VersionDatabase:
         """
         s = requests.Session()
         if cache_dir is not None:
-            s = CacheControl(s, cache=FileCache(cache_dir))
+            s = CacheControl(s, cache=FileCache(str(cache_dir)))
         with s:
             r = s.get(url)
             r.raise_for_status()
