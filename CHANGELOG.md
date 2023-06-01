@@ -1,5 +1,5 @@
-v1.1.1 (in development)
------------------------
+v1.1.1 (2023-06-01)
+-------------------
 - Support Python 3.11
 - Support cachecontrol 0.13
 

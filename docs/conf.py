@@ -2,7 +2,7 @@ from pyversion_info import __version__
 
 project = "pyversion-info"
 author = "John T. Wodder II"
-copyright = "2019-2021 John T. Wodder II"  # noqa: A001
+copyright = "2019-2023 John T. Wodder II"  # noqa: A001
 
 extensions = [
     "sphinx.ext.autodoc",
