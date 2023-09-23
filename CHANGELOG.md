@@ -1,3 +1,7 @@
+v1.2.0 (in development)
+-----------------------
+- Support platformdirs v3.0
+
 v1.1.1 (2023-06-01)
 -------------------
 - Support Python 3.11
