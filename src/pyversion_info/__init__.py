@@ -34,7 +34,6 @@ from typing import Dict, List, Mapping, Optional, Union
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 from platformdirs import user_cache_dir
-from pydantic import parse_obj_as
 import requests
 from .util import MajorVersion, MicroVersion, MinorVersion, RawDatabase
 
@@ -113,7 +112,7 @@ class VersionDatabase:
         Parses a version database from a `dict` deserialized from a JSON
         document and returns a new `VersionDatabase` instance
         """
-        rawdb = RawDatabase.parse_obj(data)
+        rawdb = RawDatabase.model_validate(data)
         return cls(
             last_modified=rawdb.last_modified,
             cpython=CPythonVersionInfo(
@@ -493,11 +492,13 @@ def parse_version(s: str) -> Union[MajorVersion, MinorVersion, MicroVersion]:
 
     :raises ValueError: if ``s`` is not a valid version string
     """
+    dots = s.count(".")
     try:
-        # <https://github.com/python/mypy/issues/4625>
-        v: Union[MajorVersion, MinorVersion, MicroVersion] = parse_obj_as(
-            Union[MajorVersion, MinorVersion, MicroVersion], s  # type: ignore[arg-type]
-        )
+        if dots == 0:
+            return MajorVersion.parse(s)
+        elif dots == 1:
+            return MinorVersion.parse(s)
+        else:
+            return MicroVersion.parse(s)
     except ValueError:
         raise ValueError(f"Invalid version string: {s!r}")
-    return v
