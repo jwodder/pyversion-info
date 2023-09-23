@@ -18,24 +18,24 @@ Visit <https://github.com/jwodder/pyversion-info> or
 """
 
 from __future__ import annotations
+from collections import OrderedDict
+from collections.abc import Mapping
+from dataclasses import dataclass
+from datetime import date, datetime
+import json
+from pathlib import Path
+from typing import Optional
+from cachecontrol import CacheControl
+from cachecontrol.caches.file_cache import FileCache
+from platformdirs import user_cache_dir
+import requests
+from .util import MajorVersion, MicroVersion, MinorVersion, RawDatabase
 
 __version__ = "1.2.0.dev1"
 __author__ = "John Thorvald Wodder II"
 __author_email__ = "pyversion-info@varonathe.org"
 __license__ = "MIT"
 __url__ = "https://github.com/jwodder/pyversion-info"
-
-from collections import OrderedDict
-from dataclasses import dataclass
-from datetime import date, datetime
-import json
-from pathlib import Path
-from typing import Dict, List, Mapping, Optional, Union
-from cachecontrol import CacheControl
-from cachecontrol.caches.file_cache import FileCache
-from platformdirs import user_cache_dir
-import requests
-from .util import MajorVersion, MicroVersion, MinorVersion, RawDatabase
 
 __all__ = [
     "CACHE_DIR",
@@ -78,15 +78,16 @@ class VersionDatabase:
 
     @classmethod
     def fetch(
-        cls, url: str = DATA_URL, cache_dir: Union[str, Path, None] = CACHE_DIR
+        cls, url: str = DATA_URL, cache_dir: str | Path | None = CACHE_DIR
     ) -> VersionDatabase:
         """
         Fetches the latest version information from the JSON document at
         ``url`` and returns a new `VersionDatabase` instance
 
         :param str url: The URL from which to fetch the data
-        :param Union[str,Path,None] cache_dir: The directory to use for caching
-            HTTP requests.  May be `None` to disable caching.
+        :param cache_dir: The directory to use for caching HTTP requests.  May
+            be `None` to disable caching.
+        :type cache_dir: str | Path | None
         :rtype: VersionDatabase
         """
         s = requests.Session()
@@ -98,7 +99,7 @@ class VersionDatabase:
             return cls.parse_obj(r.json())
 
     @classmethod
-    def parse_file(cls, filepath: Union[str, Path]) -> VersionDatabase:
+    def parse_file(cls, filepath: str | Path) -> VersionDatabase:
         """
         Parses a version database from a JSON file and returns a new
         `VersionDatabase` instance
@@ -129,15 +130,15 @@ class VersionInfo:
     A base class for storing & querying versions and their release dates
     """
 
-    def __init__(self, release_dates: Mapping[MicroVersion, Union[date, bool]]) -> None:
-        self.release_dates: Dict[MicroVersion, Union[date, bool]] = dict(release_dates)
-        self.version_trie: Dict[int, Dict[int, List[int]]] = OrderedDict()
+    def __init__(self, release_dates: Mapping[MicroVersion, date | bool]) -> None:
+        self.release_dates: dict[MicroVersion, date | bool] = dict(release_dates)
+        self.version_trie: dict[int, dict[int, list[int]]] = OrderedDict()
         for v in sorted(release_dates.keys()):
             self.version_trie.setdefault(v.x, OrderedDict()).setdefault(v.y, []).append(
                 v.z
             )
 
-    def major_versions(self) -> List[str]:
+    def major_versions(self) -> list[str]:
         """
         Returns a list in version order of all known major versions (as
         strings).
@@ -147,32 +148,32 @@ class VersionInfo:
         """
         return list(map(str, self.version_trie.keys()))
 
-    def minor_versions(self) -> List[str]:
+    def minor_versions(self) -> list[str]:
         """
         Returns a list in version order of all known minor versions
 
         .. versionchanged:: 1.0.0
             Now returns all known versions, released & unreleased
         """
-        minors: List[str] = []
+        minors: list[str] = []
         for major, subtrie in self.version_trie.items():
             minors.extend(f"{major}.{minor}" for minor in subtrie.keys())
         return minors
 
-    def micro_versions(self) -> List[str]:
+    def micro_versions(self) -> list[str]:
         """
         Returns a list in version order of all known micro versions
 
         .. versionchanged:: 1.0.0
             Now returns all known versions, released & unreleased
         """
-        micros: List[str] = []
+        micros: list[str] = []
         for major, subtrie in self.version_trie.items():
             for minor, sublist in subtrie.items():
                 micros.extend(f"{major}.{minor}.{mc}" for mc in sublist)
         return micros
 
-    def subversions(self, version: str) -> List[str]:
+    def subversions(self, version: str) -> list[str]:
         """
         Returns a list in version order of all known subversions of the given
         version.  If ``version`` is a major version, this is all of its minor
@@ -201,7 +202,7 @@ class VersionInfo:
             raise UnknownVersionError(version)
         return subs
 
-    def _release_date(self, version: str) -> Union[date, bool]:
+    def _release_date(self, version: str) -> date | bool:
         v = parse_version(version)
         try:
             if isinstance(v, MajorVersion):
@@ -270,13 +271,13 @@ class CPythonVersionInfo(VersionInfo):
 
     def __init__(
         self,
-        release_dates: Mapping[MicroVersion, Union[date, bool]],
-        eol_dates: Mapping[MinorVersion, Union[date, bool]],
+        release_dates: Mapping[MicroVersion, date | bool],
+        eol_dates: Mapping[MinorVersion, date | bool],
     ) -> None:
         super().__init__(release_dates)
-        self.eol_dates: Dict[MinorVersion, Union[date, bool]] = dict(eol_dates)
+        self.eol_dates: dict[MinorVersion, date | bool] = dict(eol_dates)
 
-    def supported_series(self) -> List[str]:
+    def supported_series(self) -> list[str]:
         """
         Returns a list in version order of all CPython version series (i.e.,
         minor versions like 3.5) that are currently supported (i.e., that have
@@ -288,7 +289,7 @@ class CPythonVersionInfo(VersionInfo):
             if self.is_released(v) and not self.is_eol(v)
         ]
 
-    def _eol_date(self, version: str) -> Union[date, bool]:
+    def _eol_date(self, version: str) -> date | bool:
         v = parse_version(version)
         try:
             if isinstance(v, MajorVersion):
@@ -397,15 +398,15 @@ class PyPyVersionInfo(VersionInfo):
 
     def __init__(
         self,
-        release_dates: Mapping[MicroVersion, Union[date, bool]],
-        cpython_versions: Mapping[MicroVersion, List[MicroVersion]],
+        release_dates: Mapping[MicroVersion, date | bool],
+        cpython_versions: Mapping[MicroVersion, list[MicroVersion]],
     ) -> None:
         super().__init__(release_dates)
-        self.cpython_versions: Dict[MicroVersion, List[MicroVersion]] = {
+        self.cpython_versions: dict[MicroVersion, list[MicroVersion]] = {
             v: sorted(versions) for v, versions in cpython_versions.items()
         }
 
-    def supported_cpython(self, version: str) -> List[str]:
+    def supported_cpython(self, version: str) -> list[str]:
         """
         Given a PyPy micro version, returns a list of the corresponding CPython
         micro versions in version order.
@@ -425,7 +426,7 @@ class PyPyVersionInfo(VersionInfo):
 
     def supported_cpython_series(
         self, version: str, released: bool = False
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Given a PyPy version, returns a list of all CPython series supported by
         that version or its subversions in version order.  If ``released`` is
@@ -485,7 +486,7 @@ class UnknownVersionError(ValueError):
         return f"Unknown version: {self.version!r}"
 
 
-def parse_version(s: str) -> Union[MajorVersion, MinorVersion, MicroVersion]:
+def parse_version(s: str) -> MajorVersion | MinorVersion | MicroVersion:
     """
     Convert a version string of the form ``X``, ``X.Y``, or ``X.Y.Z`` to a
     `Version` instance

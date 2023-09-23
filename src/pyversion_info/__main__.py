@@ -1,7 +1,9 @@
+from __future__ import annotations
+from collections.abc import Callable
 from datetime import date
 from functools import partial, wraps
 import json
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Optional
 import click
 from . import (
     CPythonVersionInfo,
@@ -133,7 +135,7 @@ def show(
     """Show information about a Python version"""
     info = vd.pypy if py == "pypy" else vd.cpython
     v = parse_version(version)
-    data: List[Tuple[str, str, Any]] = [
+    data: list[tuple[str, str, Any]] = [
         ("version", "Version", str(v)),
         # ("level", "Level", ---),
         ("release_date", "Release-Date", info.release_date(v)),
@@ -216,7 +218,7 @@ def yes(version: str) -> bool:  # noqa: U100
     return True
 
 
-def filter_versions(mode: str, info: VersionInfo, versions: List[str]) -> List[str]:
+def filter_versions(mode: str, info: VersionInfo, versions: list[str]) -> list[str]:
     if mode == "all":
         filterer = yes
     elif mode == "released":

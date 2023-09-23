@@ -2,7 +2,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from datetime import date, datetime
 import re
-from typing import Any, Dict, List, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, List, TypeVar, Union
 from pydantic import BaseModel, GetCoreSchemaHandler, TypeAdapter
 from pydantic_core import CoreSchema, core_schema
 
@@ -17,12 +17,12 @@ class Version(ABC):
         return core_schema.no_info_after_validator_function(cls, handler(str))
 
     @classmethod
-    def parse(cls: Type[V], s: Any) -> V:
+    def parse(cls: type[V], s: Any) -> V:
         return TypeAdapter(cls).validate_python(s)
 
     @property
     @abstractmethod
-    def parts(self) -> Tuple[int, ...]:
+    def parts(self) -> tuple[int, ...]:
         ...
 
     def __repr__(self) -> str:
@@ -66,7 +66,7 @@ class MajorVersion(Version, str):
         self.x = int(s)
 
     @property
-    def parts(self) -> Tuple[int]:
+    def parts(self) -> tuple[int]:
         return (self.x,)
 
     @classmethod
@@ -86,7 +86,7 @@ class MinorVersion(Version, str):
         self.y = int(y)
 
     @property
-    def parts(self) -> Tuple[int, int]:
+    def parts(self) -> tuple[int, int]:
         return (self.x, self.y)
 
     @classmethod
@@ -108,7 +108,7 @@ class MicroVersion(Version, str):
         self.z = int(z)
 
     @property
-    def parts(self) -> Tuple[int, int, int]:
+    def parts(self) -> tuple[int, int, int]:
         return (self.x, self.y, self.z)
 
     @classmethod
