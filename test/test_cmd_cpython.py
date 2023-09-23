@@ -1,7 +1,7 @@
+from __future__ import annotations
 import json
 from pathlib import Path
 from traceback import format_exception
-from typing import List
 import click
 from click.testing import CliRunner, Result
 import pytest
@@ -39,7 +39,7 @@ def show_result(r: Result) -> str:
         ("--supported", ["2", "3"]),
     ],
 )
-def test_cmd_list_major(mode: str, versions: List[str]) -> None:
+def test_cmd_list_major(mode: str, versions: list[str]) -> None:
     r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", mode, "major"])
     assert r.exit_code == 0, show_result(r)
     assert r.output == "".join(v + "\n" for v in versions)
@@ -116,7 +116,7 @@ def test_cmd_list_major(mode: str, versions: List[str]) -> None:
         ("--supported", ["2.7", "3.5", "3.6", "3.7"]),
     ],
 )
-def test_cmd_list_minor(mode: str, versions: List[str]) -> None:
+def test_cmd_list_minor(mode: str, versions: list[str]) -> None:
     r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", mode, "minor"])
     assert r.exit_code == 0, show_result(r)
     assert r.output == "".join(v + "\n" for v in versions)
@@ -511,7 +511,7 @@ def test_cmd_list_minor(mode: str, versions: List[str]) -> None:
         ),
     ],
 )
-def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
+def test_cmd_list_micro(mode: str, versions: list[str]) -> None:
     r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", mode, "micro"])
     assert r.exit_code == 0, show_result(r)
     assert r.output == "".join(v + "\n" for v in versions)

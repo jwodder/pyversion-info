@@ -1,5 +1,6 @@
+from __future__ import annotations
 from datetime import date
-from typing import List, Optional
+from typing import Optional
 import pytest
 from pytest_mock import MockerFixture
 from pyversion_info import CPythonVersionInfo, UnknownVersionError, VersionDatabase
@@ -899,7 +900,7 @@ def test_is_supported_unknown(pyvinfo: CPythonVersionInfo, v: str) -> None:
         ("3.8", ["3.8.0"]),
     ],
 )
-def test_subversions(pyvinfo: CPythonVersionInfo, v: str, subs: List[str]) -> None:
+def test_subversions(pyvinfo: CPythonVersionInfo, v: str, subs: list[str]) -> None:
     assert pyvinfo.subversions(v) == subs
 
 

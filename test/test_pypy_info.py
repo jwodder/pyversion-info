@@ -1,4 +1,4 @@
-from typing import List
+from __future__ import annotations
 import pytest
 from pytest_mock import MockerFixture
 from pyversion_info import PyPyVersionInfo, UnknownVersionError, VersionDatabase
@@ -71,7 +71,7 @@ def pypyinfo(version_database: VersionDatabase) -> PyPyVersionInfo:
     ],
 )
 def test_supported_cpython(
-    pypyinfo: PyPyVersionInfo, version: str, cpythons: List[str]
+    pypyinfo: PyPyVersionInfo, version: str, cpythons: list[str]
 ) -> None:
     assert pypyinfo.supported_cpython(version) == cpythons
 
@@ -100,7 +100,7 @@ def test_supported_cpython_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
 )
 @pytest.mark.parametrize("released", [False, True])
 def test_supported_cpython_series(
-    pypyinfo: PyPyVersionInfo, version: str, released: bool, series: List[str]
+    pypyinfo: PyPyVersionInfo, version: str, released: bool, series: list[str]
 ) -> None:
     assert pypyinfo.supported_cpython_series(version, released=released) == series
     if released is False:
@@ -119,7 +119,7 @@ def test_supported_cpython_series(
     ],
 )
 def test_supported_cpython_series_released(
-    pypyinfo: PyPyVersionInfo, version: str, released: bool, series: List[str]
+    pypyinfo: PyPyVersionInfo, version: str, released: bool, series: list[str]
 ) -> None:
     assert pypyinfo.supported_cpython_series(version, released=released) == series
     if released is False:

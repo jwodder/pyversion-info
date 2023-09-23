@@ -1,7 +1,7 @@
+from __future__ import annotations
 import json
 from pathlib import Path
 from traceback import format_exception
-from typing import List
 import click
 from click.testing import CliRunner, Result
 import pytest
@@ -32,7 +32,7 @@ def show_result(r: Result) -> str:
         ("--released", ["1", "2", "4", "5", "6", "7"]),
     ],
 )
-def test_cmd_list_major(mode: str, versions: List[str]) -> None:
+def test_cmd_list_major(mode: str, versions: list[str]) -> None:
     r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "--pypy", mode, "major"])
     assert r.exit_code == 0, show_result(r)
     assert r.output == "".join(v + "\n" for v in versions)
@@ -79,7 +79,7 @@ RELEASED_MINOR = [
         ("--released", RELEASED_MINOR),
     ],
 )
-def test_cmd_list_minor(mode: str, versions: List[str]) -> None:
+def test_cmd_list_minor(mode: str, versions: list[str]) -> None:
     r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "--pypy", mode, "minor"])
     assert r.exit_code == 0, show_result(r)
     assert r.output == "".join(v + "\n" for v in versions)
@@ -148,7 +148,7 @@ RELEASED_MICRO = [
         ("--released", RELEASED_MICRO),
     ],
 )
-def test_cmd_list_micro(mode: str, versions: List[str]) -> None:
+def test_cmd_list_micro(mode: str, versions: list[str]) -> None:
     r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "--pypy", mode, "micro"])
     assert r.exit_code == 0, show_result(r)
     assert r.output == "".join(v + "\n" for v in versions)
