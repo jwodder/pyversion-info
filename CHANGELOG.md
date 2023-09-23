@@ -1,5 +1,5 @@
-v1.2.0 (in development)
------------------------
+v1.2.0 (2023-09-23)
+-------------------
 - Support platformdirs v3.0
 - Update pydantic to v2.0
 
