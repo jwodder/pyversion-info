@@ -58,8 +58,6 @@ class Version(ABC):
 
 
 class MajorVersion(Version, str):
-    x: int
-
     def __init__(self, s: str) -> None:
         if not re.fullmatch(r"(\d+)", s):
             raise ValueError(f"Invalid major version: {s!r}")
@@ -75,9 +73,6 @@ class MajorVersion(Version, str):
 
 
 class MinorVersion(Version, str):
-    x: int
-    y: int
-
     def __init__(self, s: str) -> None:
         if not re.fullmatch(r"(\d+)\.(\d+)", s):
             raise ValueError(f"Invalid minor version: {s!r}")
@@ -95,10 +90,6 @@ class MinorVersion(Version, str):
 
 
 class MicroVersion(Version, str):
-    x: int
-    y: int
-    z: int
-
     def __init__(self, s: str) -> None:
         if not re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", s):
             raise ValueError(f"Invalid micro version: {s!r}")
