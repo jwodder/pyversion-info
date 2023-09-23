@@ -2,31 +2,23 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from datetime import date, datetime
 import re
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Type, TypeVar, Union
-from pydantic import BaseModel, parse_obj_as
-from pydantic.validators import str_validator
-
-if TYPE_CHECKING:
-    from pydantic.typing import CallableGenerator
+from typing import Any, Dict, List, Tuple, Type, TypeVar, Union
+from pydantic import BaseModel, GetCoreSchemaHandler, TypeAdapter
+from pydantic_core import CoreSchema, core_schema
 
 V = TypeVar("V", bound="Version")
 
 
 class Version(ABC):
     @classmethod
-    def __get_validators__(cls) -> CallableGenerator:
-        yield str_validator
-        yield cls._validate
-        yield cls
-
-    @classmethod
-    @abstractmethod
-    def _validate(cls, s: str) -> str:
-        ...
+    def __get_pydantic_core_schema__(
+        cls, _source_type: Any, handler: GetCoreSchemaHandler
+    ) -> CoreSchema:
+        return core_schema.no_info_after_validator_function(cls, handler(str))
 
     @classmethod
     def parse(cls: Type[V], s: Any) -> V:
-        return parse_obj_as(cls, s)
+        return TypeAdapter(cls).validate_python(s)
 
     @property
     @abstractmethod
@@ -69,14 +61,9 @@ class MajorVersion(Version, str):
     x: int
 
     def __init__(self, s: str) -> None:
-        self.x = int(s)
-
-    @classmethod
-    def _validate(cls, s: str) -> str:
-        if re.fullmatch(r"(\d+)", s):
-            return s
-        else:
+        if not re.fullmatch(r"(\d+)", s):
             raise ValueError(f"Invalid major version: {s!r}")
+        self.x = int(s)
 
     @property
     def parts(self) -> Tuple[int]:
@@ -92,16 +79,11 @@ class MinorVersion(Version, str):
     y: int
 
     def __init__(self, s: str) -> None:
+        if not re.fullmatch(r"(\d+)\.(\d+)", s):
+            raise ValueError(f"Invalid minor version: {s!r}")
         x, _, y = s.partition(".")
         self.x = int(x)
         self.y = int(y)
-
-    @classmethod
-    def _validate(cls, s: str) -> str:
-        if re.fullmatch(r"(\d+)\.(\d+)", s):
-            return s
-        else:
-            raise ValueError(f"Invalid minor version: {s!r}")
 
     @property
     def parts(self) -> Tuple[int, int]:
@@ -118,17 +100,12 @@ class MicroVersion(Version, str):
     z: int
 
     def __init__(self, s: str) -> None:
+        if not re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", s):
+            raise ValueError(f"Invalid micro version: {s!r}")
         x, y, z = s.split(".")
         self.x = int(x)
         self.y = int(y)
         self.z = int(z)
-
-    @classmethod
-    def _validate(cls, s: str) -> str:
-        if re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", s):
-            return s
-        else:
-            raise ValueError(f"Invalid micro version: {s!r}")
 
     @property
     def parts(self) -> Tuple[int, int, int]:
