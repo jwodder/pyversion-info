@@ -3,6 +3,11 @@
 Changelog
 =========
 
+v1.3.0 (in development)
+-----------------------
+- Support Python 3.12
+
+
 v1.2.0 (2023-09-23)
 -------------------
 - Support platformdirs v3.0
