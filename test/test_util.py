@@ -11,7 +11,7 @@ from pyversion_info.util import MajorVersion, MicroVersion, MinorVersion
     ],
 )
 def test_major_version(vstr: str, x: int) -> None:
-    v = MajorVersion.parse(vstr)
+    v = MajorVersion(vstr)
     assert v == vstr
     assert str(v) == vstr
     assert repr(v) == f"MajorVersion({vstr!r})"
@@ -21,7 +21,7 @@ def test_major_version(vstr: str, x: int) -> None:
 
 
 def test_major_version_cmp() -> None:
-    VERSIONS = list(map(MajorVersion.parse, ["2", "3", "10"]))
+    VERSIONS = list(map(MajorVersion, ["2", "3", "10"]))
     for i in range(len(VERSIONS) - 1):
         assert VERSIONS[i] == VERSIONS[i]
         assert VERSIONS[i] >= VERSIONS[i]
@@ -42,7 +42,7 @@ def test_major_version_cmp() -> None:
     ],
 )
 def test_minor_version(vstr: str, x: int, y: int) -> None:
-    v = MinorVersion.parse(vstr)
+    v = MinorVersion(vstr)
     assert v == vstr
     assert str(v) == vstr
     assert repr(v) == f"MinorVersion({vstr!r})"
@@ -53,7 +53,7 @@ def test_minor_version(vstr: str, x: int, y: int) -> None:
 
 
 def test_minor_version_cmp() -> None:
-    VERSIONS = list(map(MinorVersion.parse, ["2.0", "2.7", "3.0", "3.6", "3.10"]))
+    VERSIONS = list(map(MinorVersion, ["2.0", "2.7", "3.0", "3.6", "3.10"]))
     for i in range(len(VERSIONS) - 1):
         assert VERSIONS[i] == VERSIONS[i]
         assert VERSIONS[i] >= VERSIONS[i]
@@ -74,7 +74,7 @@ def test_minor_version_cmp() -> None:
     ],
 )
 def test_micro_version(vstr: str, x: int, y: int, z: int, minor: str) -> None:
-    v = MicroVersion.parse(vstr)
+    v = MicroVersion(vstr)
     assert v == vstr
     assert str(v) == vstr
     assert repr(v) == f"MicroVersion({vstr!r})"
@@ -83,13 +83,13 @@ def test_micro_version(vstr: str, x: int, y: int, z: int, minor: str) -> None:
     assert v.z == z
     assert v.parts == (x, y, z)
     assert MicroVersion.construct(x, y, z) == v
-    assert v.minor == MinorVersion.parse(minor)
+    assert v.minor == MinorVersion(minor)
 
 
 def test_micro_version_cmp() -> None:
     VERSIONS = list(
         map(
-            MicroVersion.parse,
+            MicroVersion,
             ["2.0.1", "2.1.0", "2.7.5", "3.1.3", "3.6.0", "3.6.2", "3.6.10", "3.10.0"],
         )
     )

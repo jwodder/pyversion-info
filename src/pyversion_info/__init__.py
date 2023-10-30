@@ -416,7 +416,7 @@ class PyPyVersionInfo(VersionInfo):
         :raises ValueError: if ``version`` is not a valid micro version string
         """
         try:
-            v = MicroVersion.parse(version)
+            v = MicroVersion(version)
         except ValueError:
             raise ValueError(f"Invalid micro version: {version!r}")
         try:
@@ -496,10 +496,10 @@ def parse_version(s: str) -> MajorVersion | MinorVersion | MicroVersion:
     dots = s.count(".")
     try:
         if dots == 0:
-            return MajorVersion.parse(s)
+            return MajorVersion(s)
         elif dots == 1:
-            return MinorVersion.parse(s)
+            return MinorVersion(s)
         else:
-            return MicroVersion.parse(s)
+            return MicroVersion(s)
     except ValueError:
         raise ValueError(f"Invalid version string: {s!r}")

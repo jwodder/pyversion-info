@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from datetime import date, datetime
 import re
 from typing import Any, Dict, List, TypeVar, Union
-from pydantic import BaseModel, GetCoreSchemaHandler, TypeAdapter
+from pydantic import BaseModel, GetCoreSchemaHandler
 from pydantic_core import CoreSchema, core_schema
 
 V = TypeVar("V", bound="Version")
@@ -15,10 +15,6 @@ class Version(ABC):
         cls, _source_type: Any, handler: GetCoreSchemaHandler
     ) -> CoreSchema:
         return core_schema.no_info_after_validator_function(cls, handler(str))
-
-    @classmethod
-    def parse(cls: type[V], s: Any) -> V:
-        return TypeAdapter(cls).validate_python(s)
 
     @property
     @abstractmethod
@@ -69,7 +65,7 @@ class MajorVersion(Version, str):
 
     @classmethod
     def construct(cls, x: int) -> MajorVersion:
-        return cls.parse(str(x))
+        return cls(str(x))
 
 
 class MinorVersion(Version, str):
@@ -86,7 +82,7 @@ class MinorVersion(Version, str):
 
     @classmethod
     def construct(cls, x: int, y: int) -> MinorVersion:
-        return cls.parse(f"{x}.{y}")
+        return cls(f"{x}.{y}")
 
 
 class MicroVersion(Version, str):
@@ -104,7 +100,7 @@ class MicroVersion(Version, str):
 
     @classmethod
     def construct(cls, x: int, y: int, z: int) -> MicroVersion:
-        return cls.parse(f"{x}.{y}.{z}")
+        return cls(f"{x}.{y}.{z}")
 
     @property
     def minor(self) -> MinorVersion:
