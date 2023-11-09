@@ -31,7 +31,7 @@ from platformdirs import user_cache_dir
 import requests
 from .util import MajorVersion, MicroVersion, MinorVersion, RawDatabase
 
-__version__ = "1.3.0.dev1"
+__version__ = "1.2.1.dev1"
 __author__ = "John Thorvald Wodder II"
 __author_email__ = "pyversion-info@varonathe.org"
 __license__ = "MIT"
@@ -460,12 +460,12 @@ class PyPyVersionInfo(VersionInfo):
                 assert isinstance(v, MicroVersion)
                 micros = [v]
             series_set = {
-                str(cpyv.minor)
+                cpyv.minor
                 for m in micros
                 if not released or self.is_released(m)
                 for cpyv in self.cpython_versions[m]
             }
-            return sorted(series_set)
+            return [str(v) for v in sorted(series_set)]
         except KeyError:
             raise UnknownVersionError(version)
 

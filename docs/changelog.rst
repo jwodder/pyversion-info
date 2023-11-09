@@ -3,9 +3,11 @@
 Changelog
 =========
 
-v1.3.0 (in development)
+v1.2.1 (in development)
 -----------------------
 - Support Python 3.12
+- Correct the order of results returned by
+  `PyPyVersionInfo.supported_cpython_series()`
 
 
 v1.2.0 (2023-09-23)
