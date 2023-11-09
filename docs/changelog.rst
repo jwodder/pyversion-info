@@ -3,8 +3,8 @@
 Changelog
 =========
 
-v1.2.1 (in development)
------------------------
+v1.2.1 (2023-11-09)
+-------------------
 - Support Python 3.12
 - Correct the order of results returned by
   `PyPyVersionInfo.supported_cpython_series()`
