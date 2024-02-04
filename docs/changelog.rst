@@ -3,8 +3,8 @@
 Changelog
 =========
 
-v1.2.2 (in development)
------------------------
+v1.2.2 (2024-02-04)
+-------------------
 - Support platformdirs v4.0
 - Migrated from setuptools to hatch
 - Support cachecontrol v0.14
