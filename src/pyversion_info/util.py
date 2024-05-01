@@ -18,8 +18,7 @@ class Version(ABC):
 
     @property
     @abstractmethod
-    def parts(self) -> tuple[int, ...]:
-        ...
+    def parts(self) -> tuple[int, ...]: ...
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({super().__repr__()})"
