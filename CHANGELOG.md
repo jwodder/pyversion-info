@@ -1,3 +1,7 @@
+v1.3.0 (in development)
+-----------------------
+- Drop support for Python 3.7
+
 v1.2.2 (2024-02-04)
 -------------------
 - Support platformdirs v4.0
