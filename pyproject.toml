@@ -9,7 +9,7 @@ description = "Get information about released & unreleased CPython and PyPy vers
 readme = "README.rst"
 requires-python = ">=3.8"
 license = "MIT"
-license-files = { paths = ["LICENSE"] }
+license-files = ["LICENSE"]
 authors = [
     { name = "John Thorvald Wodder II", email = "pyversion-info@varonathe.org" }
 ]
@@ -33,7 +33,6 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
-    "License :: OSI Approved :: MIT License",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
     "Intended Audience :: System Administrators",
