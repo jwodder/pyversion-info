@@ -31,7 +31,7 @@ from platformdirs import user_cache_dir
 import requests
 from .util import MajorVersion, MicroVersion, MinorVersion, RawDatabase
 
-__version__ = "1.2.4.dev1"
+__version__ = "1.2.4"
 __author__ = "John Thorvald Wodder II"
 __author_email__ = "pyversion-info@varonathe.org"
 __license__ = "MIT"
