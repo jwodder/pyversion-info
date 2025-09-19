@@ -79,7 +79,6 @@ def main(ctx: click.Context, database: Optional[str]) -> None:
     "mode",
     flag_value="released",
     help="List only released versions  [default]",
-    default=True,
 )
 @click.option(
     "-s",
@@ -91,8 +90,10 @@ def main(ctx: click.Context, database: Optional[str]) -> None:
 @click.argument("level", type=click.Choice(["major", "minor", "micro"]))
 @click.pass_obj
 @map_exc_to_click
-def list_cmd(vd: VersionDatabase, level: str, mode: str, py: str) -> None:
+def list_cmd(vd: VersionDatabase, level: str, mode: str | None, py: str) -> None:
     """List known versions at the given version level"""
+    if mode is None:
+        mode = "released"
     info = vd.pypy if py == "pypy" else vd.cpython
     func = {
         "major": info.major_versions,

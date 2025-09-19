@@ -3,6 +3,11 @@
 Changelog
 =========
 
+v1.2.4 (in development)
+-----------------------
+- Support click v8.3.0
+
+
 v1.2.3 (2025-08-02)
 -------------------
 - Drop support for Python 3.7
