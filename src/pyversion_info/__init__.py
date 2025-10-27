@@ -481,6 +481,7 @@ class UnknownVersionError(ValueError):
     def __init__(self, version: str) -> None:
         #: The unknown version the caller asked about
         self.version = str(version)
+        super().__init__(version)
 
     def __str__(self) -> str:
         return f"Unknown version: {self.version!r}"
