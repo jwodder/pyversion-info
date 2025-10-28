@@ -32,7 +32,7 @@ a bus.
 
 Installation
 ============
-``pyversion-info`` requires Python 3.8 or higher.  Just use `pip
+``pyversion-info`` requires Python 3.10 or higher.  Just use `pip
 <https://pip.pypa.io>`_ for Python 3 (You have pip, right?) to install
 ``pyversion-info`` and its dependencies::
 

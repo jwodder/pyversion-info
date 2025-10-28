@@ -1,6 +1,5 @@
 from __future__ import annotations
 from datetime import date
-from typing import Optional
 import pytest
 from pytest_mock import MockerFixture
 from pyversion_info import CPythonVersionInfo, UnknownVersionError, VersionDatabase
@@ -388,7 +387,7 @@ def test_micro_versions(pyvinfo: CPythonVersionInfo) -> None:
         ("4.0.0", None),
     ],
 )
-def test_release_date(pyvinfo: CPythonVersionInfo, v: str, rel: Optional[date]) -> None:
+def test_release_date(pyvinfo: CPythonVersionInfo, v: str, rel: date | None) -> None:
     assert pyvinfo.release_date(v) == rel
 
 
@@ -642,9 +641,7 @@ def test_is_released_unknown(pyvinfo: CPythonVersionInfo, v: str) -> None:
         ("4.0", None),
     ],
 )
-def test_eol_date(
-    pyvinfo: CPythonVersionInfo, version: str, eol: Optional[date]
-) -> None:
+def test_eol_date(pyvinfo: CPythonVersionInfo, version: str, eol: date | None) -> None:
     assert pyvinfo.eol_date(version) == eol
 
 
