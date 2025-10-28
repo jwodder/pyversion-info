@@ -3,7 +3,7 @@ from collections.abc import Callable
 from datetime import date
 from functools import partial, wraps
 import json
-from typing import Any, Optional
+from typing import Any
 import click
 from . import (
     CPythonVersionInfo,
@@ -41,7 +41,7 @@ def map_exc_to_click(func: Callable) -> Callable:
     help="Fetch version information from the given database",
 )
 @click.pass_context
-def main(ctx: click.Context, database: Optional[str]) -> None:
+def main(ctx: click.Context, database: str | None) -> None:
     """Show details about Python versions"""
     if database is None:
         ctx.obj = VersionDatabase.fetch()

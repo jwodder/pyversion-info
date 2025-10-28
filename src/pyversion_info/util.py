@@ -2,7 +2,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from datetime import date, datetime
 import re
-from typing import Any, Dict, List, TypeVar, Union
+from typing import Any, TypeVar
 from pydantic import BaseModel, GetCoreSchemaHandler
 from pydantic_core import CoreSchema, core_schema
 
@@ -111,13 +111,13 @@ class MicroVersion(Version, str):
 
 
 class RawCPythonInfo(BaseModel):
-    release_dates: Dict[MicroVersion, Union[bool, date]]
-    eol_dates: Dict[MinorVersion, Union[bool, date]]
+    release_dates: dict[MicroVersion, bool | date]
+    eol_dates: dict[MinorVersion, bool | date]
 
 
 class RawPyPyInfo(BaseModel):
-    release_dates: Dict[MicroVersion, Union[bool, date]]
-    cpython_versions: Dict[MicroVersion, List[MicroVersion]]
+    release_dates: dict[MicroVersion, bool | date]
+    cpython_versions: dict[MicroVersion, list[MicroVersion]]
 
 
 class RawDatabase(BaseModel):

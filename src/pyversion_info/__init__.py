@@ -24,7 +24,6 @@ from dataclasses import dataclass
 from datetime import date, datetime
 import json
 from pathlib import Path
-from typing import Optional
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 from platformdirs import user_cache_dir
@@ -217,7 +216,7 @@ class VersionInfo:
         except KeyError:
             raise UnknownVersionError(version)
 
-    def release_date(self, version: str) -> Optional[date]:
+    def release_date(self, version: str) -> date | None:
         """
         Returns the release date of the given version.  For a major or minor
         version, this is the release date of its first (in version order) micro
@@ -312,7 +311,7 @@ class CPythonVersionInfo(VersionInfo):
         except KeyError:
             raise UnknownVersionError(version)
 
-    def eol_date(self, version: str) -> Optional[date]:
+    def eol_date(self, version: str) -> date | None:
         """
         Returns the end-of-life date of the given CPython version.  The return
         value may be `None`, indicating that, though the version is known to
