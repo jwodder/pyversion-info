@@ -1,3 +1,7 @@
+v1.3.0 (in development)
+-----------------------
+- Support Python 3.14
+
 v1.2.4 (2025-09-19)
 -------------------
 - Support click v8.3.0
