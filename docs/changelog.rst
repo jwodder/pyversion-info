@@ -3,8 +3,8 @@
 Changelog
 =========
 
-v1.3.0 (in development)
------------------------
+v1.2.5 (2025-11-19)
+-------------------
 - Support Python 3.14
 - Drop support for Python 3.8 and 3.9
 - Drop ``click`` dependency
