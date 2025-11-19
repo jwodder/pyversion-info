@@ -1,9 +1,6 @@
 from __future__ import annotations
 import json
 from pathlib import Path
-from traceback import format_exception
-import click
-from click.testing import CliRunner, Result
 import pytest
 from pytest_mock import MockerFixture
 from pyversion_info.__main__ import main
@@ -17,14 +14,6 @@ def use_fixed_date(mocker: MockerFixture) -> None:
     # Time is now 2021-11-04T02:15:01+00:00.
 
 
-def show_result(r: Result) -> str:
-    if r.exception is not None:
-        assert isinstance(r.exc_info, tuple)
-        return "".join(format_exception(*r.exc_info))
-    else:
-        return r.output
-
-
 @pytest.mark.parametrize(
     "mode,versions",
     [
@@ -32,14 +21,18 @@ def show_result(r: Result) -> str:
         ("--released", ["1", "2", "4", "5", "6", "7"]),
     ],
 )
-def test_cmd_list_major(mode: str, versions: list[str]) -> None:
-    r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "--pypy", mode, "major"])
-    assert r.exit_code == 0, show_result(r)
-    assert r.output == "".join(v + "\n" for v in versions)
+def test_cmd_list_major(
+    capsys: pytest.CaptureFixture[str], mode: str, versions: list[str]
+) -> None:
+    assert main(["-d", DATA_FILE, "list", "--pypy", mode, "major"]) == 0
+    out, err = capsys.readouterr()
+    assert out == "".join(v + "\n" for v in versions)
+    assert err == ""
     if mode == "--released":
-        r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "--pypy", "major"])
-        assert r.exit_code == 0, show_result(r)
-        assert r.output == "".join(v + "\n" for v in versions)
+        assert main(["-d", DATA_FILE, "list", "--pypy", "major"]) == 0
+        out, err = capsys.readouterr()
+        assert out == "".join(v + "\n" for v in versions)
+        assert err == ""
 
 
 RELEASED_MINOR = [
@@ -79,14 +72,18 @@ RELEASED_MINOR = [
         ("--released", RELEASED_MINOR),
     ],
 )
-def test_cmd_list_minor(mode: str, versions: list[str]) -> None:
-    r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "--pypy", mode, "minor"])
-    assert r.exit_code == 0, show_result(r)
-    assert r.output == "".join(v + "\n" for v in versions)
+def test_cmd_list_minor(
+    capsys: pytest.CaptureFixture[str], mode: str, versions: list[str]
+) -> None:
+    assert main(["-d", DATA_FILE, "list", "--pypy", mode, "minor"]) == 0
+    out, err = capsys.readouterr()
+    assert out == "".join(v + "\n" for v in versions)
+    assert err == ""
     if mode == "--released":
-        r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "--pypy", "minor"])
-        assert r.exit_code == 0, show_result(r)
-        assert r.output == "".join(v + "\n" for v in versions)
+        assert main(["-d", DATA_FILE, "list", "--pypy", "minor"]) == 0
+        out, err = capsys.readouterr()
+        assert out == "".join(v + "\n" for v in versions)
+        assert err == ""
 
 
 RELEASED_MICRO = [
@@ -148,38 +145,44 @@ RELEASED_MICRO = [
         ("--released", RELEASED_MICRO),
     ],
 )
-def test_cmd_list_micro(mode: str, versions: list[str]) -> None:
-    r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "--pypy", mode, "micro"])
-    assert r.exit_code == 0, show_result(r)
-    assert r.output == "".join(v + "\n" for v in versions)
+def test_cmd_list_micro(
+    capsys: pytest.CaptureFixture[str], mode: str, versions: list[str]
+) -> None:
+    assert main(["-d", DATA_FILE, "list", "--pypy", mode, "micro"]) == 0
+    out, err = capsys.readouterr()
+    assert out == "".join(v + "\n" for v in versions)
+    assert err == ""
     if mode == "--released":
-        r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "--pypy", "micro"])
-        assert r.exit_code == 0, show_result(r)
-        assert r.output == "".join(v + "\n" for v in versions)
+        assert main(["-d", DATA_FILE, "list", "--pypy", "micro"]) == 0
+        out, err = capsys.readouterr()
+        assert out == "".join(v + "\n" for v in versions)
+        assert err == ""
 
 
 @pytest.mark.parametrize("level", ["major", "minor", "micro"])
-def test_cmd_list_not_eol(level: str) -> None:
-    r = CliRunner().invoke(
-        main,
-        ["-d", DATA_FILE, "list", "--pypy", "--not-eol", level],
-        standalone_mode=False,
+def test_cmd_list_not_eol(capsys: pytest.CaptureFixture[str], level: str) -> None:
+    assert (
+        main(
+            ["-d", DATA_FILE, "list", "--pypy", "--not-eol", level],
+        )
+        == 1
     )
-    assert r.exit_code != 0
-    assert isinstance(r.exception, click.UsageError)
-    assert str(r.exception) == "'not-eol' only applies to CPython versions"
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == "pyversion-info: 'not-eol' only applies to CPython versions\n"
 
 
 @pytest.mark.parametrize("level", ["major", "minor", "micro"])
-def test_cmd_list_supported(level: str) -> None:
-    r = CliRunner().invoke(
-        main,
-        ["-d", DATA_FILE, "list", "--pypy", "--supported", level],
-        standalone_mode=False,
+def test_cmd_list_supported(capsys: pytest.CaptureFixture[str], level: str) -> None:
+    assert (
+        main(
+            ["-d", DATA_FILE, "list", "--pypy", "--supported", level],
+        )
+        == 1
     )
-    assert r.exit_code != 0
-    assert isinstance(r.exception, click.UsageError)
-    assert str(r.exception) == "'supported' only applies to CPython versions"
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == "pyversion-info: 'supported' only applies to CPython versions\n"
 
 
 @pytest.mark.parametrize(
@@ -279,27 +282,38 @@ def test_cmd_list_supported(level: str) -> None:
     ],
 )
 @pytest.mark.parametrize("subversions", ["released", "all"])
-def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
-    r = CliRunner().invoke(
-        main, ["-d", DATA_FILE, "show", "--pypy", "--subversions", subversions, version]
+def test_show(
+    capsys: pytest.CaptureFixture[str],
+    version: str,
+    subversions: str,
+    data: dict,
+    headers: str,
+) -> None:
+    assert (
+        main(["-d", DATA_FILE, "show", "--pypy", "--subversions", subversions, version])
+        == 0
     )
-    assert r.exit_code == 0, show_result(r)
-    assert r.output == headers
-    r = CliRunner().invoke(
-        main,
-        [
-            "-d",
-            DATA_FILE,
-            "show",
-            "--pypy",
-            "--json",
-            "--subversions",
-            subversions,
-            version,
-        ],
+    out, err = capsys.readouterr()
+    assert out == headers
+    assert err == ""
+    assert (
+        main(
+            [
+                "-d",
+                DATA_FILE,
+                "show",
+                "--pypy",
+                "--json",
+                "--subversions",
+                subversions,
+                version,
+            ]
+        )
+        == 0
     )
-    assert r.exit_code == 0, show_result(r)
-    assert json.loads(r.output) == data
+    out, err = capsys.readouterr()
+    assert json.loads(out) == data
+    assert err == ""
 
 
 @pytest.mark.parametrize(
@@ -388,73 +402,81 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
     ],
 )
 def test_show_not_all_released(
-    version: str, subversions: str, data: dict, headers: str
+    capsys: pytest.CaptureFixture[str],
+    version: str,
+    subversions: str,
+    data: dict,
+    headers: str,
 ) -> None:
-    r = CliRunner().invoke(
-        main, ["-d", DATA_FILE, "show", "--pypy", "--subversions", subversions, version]
+    assert (
+        main(["-d", DATA_FILE, "show", "--pypy", "--subversions", subversions, version])
+        == 0
     )
-    assert r.exit_code == 0, show_result(r)
-    assert r.output == headers
+    out, err = capsys.readouterr()
+    assert out == headers
+    assert err == ""
     if subversions == "released":
-        r = CliRunner().invoke(main, ["-d", DATA_FILE, "show", "--pypy", version])
-        assert r.exit_code == 0, show_result(r)
-        assert r.output == headers
-    r = CliRunner().invoke(
-        main,
-        [
-            "-d",
-            DATA_FILE,
-            "show",
-            "--pypy",
-            "--json",
-            "--subversions",
-            subversions,
-            version,
-        ],
+        assert main(["-d", DATA_FILE, "show", "--pypy", version]) == 0
+        out, err = capsys.readouterr()
+        assert out == headers
+        assert err == ""
+    assert (
+        main(
+            [
+                "-d",
+                DATA_FILE,
+                "show",
+                "--pypy",
+                "--json",
+                "--subversions",
+                subversions,
+                version,
+            ]
+        )
+        == 0
     )
-    assert r.exit_code == 0, show_result(r)
-    assert json.loads(r.output) == data
+    out, err = capsys.readouterr()
+    assert json.loads(out) == data
+    assert err == ""
 
 
 @pytest.mark.parametrize("v", ["7", "7.3"])
-def test_cmd_show_not_eol(v: str) -> None:
-    r = CliRunner().invoke(
-        main,
-        ["-d", DATA_FILE, "show", "--pypy", "--subversions", "not-eol", v],
-        standalone_mode=False,
+def test_cmd_show_not_eol(capsys: pytest.CaptureFixture[str], v: str) -> None:
+    assert (
+        main(
+            ["-d", DATA_FILE, "show", "--pypy", "--subversions", "not-eol", v],
+        )
+        == 1
     )
-    assert r.exit_code != 0
-    assert isinstance(r.exception, click.UsageError)
-    assert str(r.exception) == "'not-eol' only applies to CPython versions"
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == "pyversion-info: 'not-eol' only applies to CPython versions\n"
 
 
 @pytest.mark.parametrize("v", ["7", "7.3"])
-def test_cmd_show_supported(v: str) -> None:
-    r = CliRunner().invoke(
-        main,
-        ["-d", DATA_FILE, "show", "--pypy", "--subversions", "supported", v],
-        standalone_mode=False,
+def test_cmd_show_supported(capsys: pytest.CaptureFixture[str], v: str) -> None:
+    assert (
+        main(
+            ["-d", DATA_FILE, "show", "--pypy", "--subversions", "supported", v],
+        )
+        == 1
     )
-    assert r.exit_code != 0
-    assert isinstance(r.exception, click.UsageError)
-    assert str(r.exception) == "'supported' only applies to CPython versions"
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == "pyversion-info: 'supported' only applies to CPython versions\n"
 
 
 @pytest.mark.parametrize("v", ["", "1.2.3.4", "1.2.3rc1", "foobar", "a.b.c"])
-def test_show_invalid_version(v: str) -> None:
-    r = CliRunner().invoke(
-        main, ["-d", DATA_FILE, "show", "--pypy", v], standalone_mode=False
-    )
-    assert r.exit_code != 0
-    assert isinstance(r.exception, click.UsageError)
-    assert str(r.exception) == f"Invalid version string: {v!r}"
+def test_show_invalid_version(capsys: pytest.CaptureFixture[str], v: str) -> None:
+    assert main(["-d", DATA_FILE, "show", "--pypy", v]) == 1
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == f"pyversion-info: Invalid version string: {v!r}\n"
 
 
 @pytest.mark.parametrize("v", ["0.8", "1.5", "3", "7.3.9", "9.0.0"])
-def test_show_unknown_version(v: str) -> None:
-    r = CliRunner().invoke(
-        main, ["-d", DATA_FILE, "show", "--pypy", v], standalone_mode=False
-    )
-    assert r.exit_code != 0
-    assert isinstance(r.exception, click.UsageError)
-    assert str(r.exception) == f"Unknown version: {v!r}"
+def test_show_unknown_version(capsys: pytest.CaptureFixture[str], v: str) -> None:
+    assert main(["-d", DATA_FILE, "show", "--pypy", v]) == 1
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == f"pyversion-info: Unknown version: {v!r}\n"
