@@ -2,6 +2,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from datetime import date
+from enum import Enum
 from functools import partial
 import json
 import sys
@@ -56,10 +57,10 @@ class Command:
             "--all",
             dest="mode",
             action="store_const",
-            const="all",
+            const=Mode.ALL,
             help="List all known versions",
             # This goes on the first option with `dest="mode"`:
-            default="released",
+            default=Mode.RELEASED,
         )
         listparser.add_argument(
             "--cpython",
@@ -74,7 +75,7 @@ class Command:
             "--not-eol",
             dest="mode",
             action="store_const",
-            const="not-eol",
+            const=Mode.NOT_EOL,
             help="List only versions that are not EOL (supported versions + unreleased versions)",
         )
         listparser.add_argument(
@@ -89,7 +90,7 @@ class Command:
             "--released",
             dest="mode",
             action="store_const",
-            const="released",
+            const=Mode.RELEASED,
             help="List only released versions  [default]",
         )
         listparser.add_argument(
@@ -97,7 +98,7 @@ class Command:
             "--supported",
             dest="mode",
             action="store_const",
-            const="supported",
+            const=Mode.SUPPORTED,
             help="List only supported versions",
         )
         listparser.add_argument("level", choices=["major", "minor", "micro"])
@@ -113,9 +114,7 @@ class Command:
             help="Show information about CPython versions  [default]",
             default="cpython",
         )
-        showparser.add_argument(
-            "-J", "--json", dest="do_json", action="store_true", help="Output JSON"
-        )
+        showparser.add_argument("-J", "--json", action="store_true", help="Output JSON")
         showparser.add_argument(
             "--pypy",
             dest="py",
@@ -126,6 +125,7 @@ class Command:
         showparser.add_argument(
             "-S",
             "--subversions",
+            # Don't convert with `type` here, as that takes effect before `choices`
             choices=["all", "not-eol", "released", "supported"],
             help="Which subversions to list  [default: released]",
             default="released",
@@ -140,8 +140,8 @@ class Command:
             case "show":
                 subcommand = ShowCommand(
                     version=args.version,
-                    subversions=args.subversions,
-                    do_json=args.do_json,
+                    subversions=Mode(args.subversions),
+                    json=args.json,
                     py=args.py,
                 )
             case cmd:
@@ -162,10 +162,35 @@ class Command:
             return 1
 
 
+class Mode(Enum):
+    ALL = "all"
+    NOT_EOL = "not-eol"
+    RELEASED = "released"
+    SUPPORTED = "supported"
+
+    def filter_versions(self, info: VersionInfo, versions: list[str]) -> list[str]:
+        match self:
+            case Mode.ALL:
+                filterer = yes
+            case Mode.RELEASED:
+                filterer = info.is_released
+            case Mode.SUPPORTED:
+                if not isinstance(info, CPythonVersionInfo):
+                    raise ValueError("'supported' only applies to CPython versions")
+                filterer = info.is_supported
+            case Mode.NOT_EOL:
+                if not isinstance(info, CPythonVersionInfo):
+                    raise ValueError("'not-eol' only applies to CPython versions")
+                filterer = partial(is_not_eol, info)
+            case mode:
+                raise AssertionError(f"Unexpected mode: {mode!r}")  # pragma: no cover
+        return list(filter(filterer, versions))
+
+
 @dataclass
 class ListCommand:
     level: str
-    mode: str
+    mode: Mode
     py: str
 
     def run(self, vd: VersionDatabase) -> int:
@@ -175,7 +200,7 @@ class ListCommand:
             "minor": info.minor_versions,
             "micro": info.micro_versions,
         }[self.level]
-        for v in filter_versions(self.mode, info, func()):
+        for v in self.mode.filter_versions(info, func()):
             print(v)
         return 0
 
@@ -183,8 +208,8 @@ class ListCommand:
 @dataclass
 class ShowCommand:
     version: str
-    subversions: str
-    do_json: bool
+    subversions: Mode
+    json: bool
     py: str
 
     def run(self, vd: VersionDatabase) -> int:
@@ -207,7 +232,7 @@ class ShowCommand:
                 (
                     "subversions",
                     "Subversions",
-                    filter_versions(self.subversions, info, info.subversions(v)),
+                    self.subversions.filter_versions(info, info.subversions(v)),
                 )
             )
             if isinstance(info, PyPyVersionInfo):
@@ -216,7 +241,8 @@ class ShowCommand:
                         "cpython_series",
                         "CPython-Series",
                         info.supported_cpython_series(
-                            v, released=self.subversions == "released"
+                            v,
+                            released=self.subversions is Mode.RELEASED,
                         ),
                     )
                 )
@@ -229,7 +255,7 @@ class ShowCommand:
                 (
                     "subversions",
                     "Subversions",
-                    filter_versions(self.subversions, info, info.subversions(v)),
+                    self.subversions.filter_versions(info, info.subversions(v)),
                 )
             )
             if isinstance(info, PyPyVersionInfo):
@@ -238,7 +264,8 @@ class ShowCommand:
                         "cpython_series",
                         "CPython-Series",
                         info.supported_cpython_series(
-                            v, released=self.subversions == "released"
+                            v,
+                            released=self.subversions is Mode.RELEASED,
                         ),
                     )
                 )
@@ -250,7 +277,7 @@ class ShowCommand:
                 data.append(("is_eol", "Is-EOL", info.is_eol(v)))
             if isinstance(info, PyPyVersionInfo):
                 data.append(("cpython", "CPython", info.supported_cpython(v)))
-        if self.do_json:
+        if self.json:
             print(json.dumps({k: v for k, _, v in data}, indent=4, default=str))
         else:
             for _, label, val in data:
@@ -276,24 +303,6 @@ def is_not_eol(pyvinfo: CPythonVersionInfo, version: str) -> bool:
 
 def yes(version: str) -> bool:  # noqa: U100
     return True
-
-
-def filter_versions(mode: str, info: VersionInfo, versions: list[str]) -> list[str]:
-    if mode == "all":
-        filterer = yes
-    elif mode == "released":
-        filterer = info.is_released
-    elif mode == "supported":
-        if not isinstance(info, CPythonVersionInfo):
-            raise ValueError("'supported' only applies to CPython versions")
-        filterer = info.is_supported
-    elif mode == "not-eol":
-        if not isinstance(info, CPythonVersionInfo):
-            raise ValueError("'not-eol' only applies to CPython versions")
-        filterer = partial(is_not_eol, info)
-    else:
-        raise AssertionError(f"Unexpected mode: {mode!r}")  # pragma: no cover
-    return list(filter(filterer, versions))
 
 
 if __name__ == "__main__":
