@@ -66,9 +66,9 @@ class Command:
             "--cpython",
             dest="py",
             action="store_const",
-            const="cpython",
+            const=PyImpl.CPYTHON,
             help="Show information about CPython versions  [default]",
-            default="cpython",
+            default=PyImpl.CPYTHON,
         )
         listparser.add_argument(
             "-n",
@@ -82,7 +82,7 @@ class Command:
             "--pypy",
             dest="py",
             action="store_const",
-            const="pypy",
+            const=PyImpl.PYPY,
             help="Show information about PyPy versions",
         )
         listparser.add_argument(
@@ -101,6 +101,7 @@ class Command:
             const=Mode.SUPPORTED,
             help="List only supported versions",
         )
+        # Don't convert with `type` here, as that takes effect before `choices`
         listparser.add_argument("level", choices=["major", "minor", "micro"])
 
         showparser = subparsers.add_parser(
@@ -110,16 +111,16 @@ class Command:
             "--cpython",
             dest="py",
             action="store_const",
-            const="cpython",
+            const=PyImpl.CPYTHON,
             help="Show information about CPython versions  [default]",
-            default="cpython",
+            default=PyImpl.CPYTHON,
         )
         showparser.add_argument("-J", "--json", action="store_true", help="Output JSON")
         showparser.add_argument(
             "--pypy",
             dest="py",
             action="store_const",
-            const="pypy",
+            const=PyImpl.PYPY,
             help="Show information about PyPy versions",
         )
         showparser.add_argument(
@@ -136,7 +137,9 @@ class Command:
         subcommand: Subcommand
         match args.subcommand:
             case "list":
-                subcommand = ListCommand(level=args.level, mode=args.mode, py=args.py)
+                subcommand = ListCommand(
+                    level=Level(args.level), mode=args.mode, py=args.py
+                )
             case "show":
                 subcommand = ShowCommand(
                     version=args.version,
@@ -160,6 +163,22 @@ class Command:
         except ValueError as e:
             print(f"pyversion-info: {e}", file=sys.stderr)
             return 1
+
+
+class PyImpl(Enum):
+    CPYTHON = 0
+    PYPY = 1
+
+    def get_info(self, vd: VersionDatabase) -> VersionInfo:
+        match self:
+            case PyImpl.CPYTHON:
+                return vd.cpython
+            case PyImpl.PYPY:
+                return vd.pypy
+            case _:
+                raise AssertionError(
+                    f"Unexpected Python implementation: {self!r}"
+                )  # pragma: no cover
 
 
 class Mode(Enum):
@@ -187,20 +206,32 @@ class Mode(Enum):
         return list(filter(filterer, versions))
 
 
+class Level(Enum):
+    MAJOR = "major"
+    MINOR = "minor"
+    MICRO = "micro"
+
+    def get_versions(self, info: VersionInfo) -> list[str]:
+        match self:
+            case Level.MAJOR:
+                return info.major_versions()
+            case Level.MINOR:
+                return info.minor_versions()
+            case Level.MICRO:
+                return info.micro_versions()
+            case level:
+                raise AssertionError(f"Unexpected level: {level!r}")  # pragma: no cover
+
+
 @dataclass
 class ListCommand:
-    level: str
+    level: Level
     mode: Mode
-    py: str
+    py: PyImpl
 
     def run(self, vd: VersionDatabase) -> int:
-        info = vd.pypy if self.py == "pypy" else vd.cpython
-        func = {
-            "major": info.major_versions,
-            "minor": info.minor_versions,
-            "micro": info.micro_versions,
-        }[self.level]
-        for v in self.mode.filter_versions(info, func()):
+        info = self.py.get_info(vd)
+        for v in self.mode.filter_versions(info, self.level.get_versions(info)):
             print(v)
         return 0
 
@@ -210,10 +241,10 @@ class ShowCommand:
     version: str
     subversions: Mode
     json: bool
-    py: str
+    py: PyImpl
 
     def run(self, vd: VersionDatabase) -> int:
-        info = vd.pypy if self.py == "pypy" else vd.cpython
+        info = self.py.get_info(vd)
         v = parse_version(self.version)
         data: list[tuple[str, str, Any]] = [
             ("version", "Version", str(v)),
