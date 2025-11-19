@@ -147,8 +147,8 @@ class Command:
                     json=args.json,
                     py=args.py,
                 )
-            case cmd:
-                raise RuntimeError(f"Internal error: unhandled subcommand: {cmd!r}")
+            case cmd:  # pragma: no cover
+                raise AssertionError(f"Unexpected subcommand: {cmd!r}")
         return Command(database=args.database, subcommand=subcommand)
 
     def run(self) -> int:
@@ -175,10 +175,8 @@ class PyImpl(Enum):
                 return vd.cpython
             case PyImpl.PYPY:
                 return vd.pypy
-            case _:
-                raise AssertionError(
-                    f"Unexpected Python implementation: {self!r}"
-                )  # pragma: no cover
+            case _:  # pragma: no cover
+                raise AssertionError(f"Unexpected Python implementation: {self!r}")
 
 
 class Mode(Enum):
@@ -201,8 +199,8 @@ class Mode(Enum):
                 if not isinstance(info, CPythonVersionInfo):
                     raise ValueError('"not-eol" only applies to CPython versions')
                 filterer = partial(is_not_eol, info)
-            case mode:
-                raise AssertionError(f"Unexpected mode: {mode!r}")  # pragma: no cover
+            case mode:  # pragma: no cover
+                raise AssertionError(f"Unexpected mode: {mode!r}")
         return list(filter(filterer, versions))
 
 
@@ -219,8 +217,8 @@ class Level(Enum):
                 return info.minor_versions()
             case Level.MICRO:
                 return info.micro_versions()
-            case level:
-                raise AssertionError(f"Unexpected level: {level!r}")  # pragma: no cover
+            case level:  # pragma: no cover
+                raise AssertionError(f"Unexpected level: {level!r}")
 
 
 @dataclass
