@@ -169,7 +169,7 @@ def test_cmd_list_not_eol(capsys: pytest.CaptureFixture[str], level: str) -> Non
     )
     out, err = capsys.readouterr()
     assert out == ""
-    assert err == "pyversion-info: 'not-eol' only applies to CPython versions\n"
+    assert err == 'pyversion-info: "not-eol" only applies to CPython versions\n'
 
 
 @pytest.mark.parametrize("level", ["major", "minor", "micro"])
@@ -182,7 +182,7 @@ def test_cmd_list_supported(capsys: pytest.CaptureFixture[str], level: str) -> N
     )
     out, err = capsys.readouterr()
     assert out == ""
-    assert err == "pyversion-info: 'supported' only applies to CPython versions\n"
+    assert err == 'pyversion-info: "supported" only applies to CPython versions\n'
 
 
 @pytest.mark.parametrize(
@@ -450,7 +450,7 @@ def test_cmd_show_not_eol(capsys: pytest.CaptureFixture[str], v: str) -> None:
     )
     out, err = capsys.readouterr()
     assert out == ""
-    assert err == "pyversion-info: 'not-eol' only applies to CPython versions\n"
+    assert err == 'pyversion-info: "not-eol" only applies to CPython versions\n'
 
 
 @pytest.mark.parametrize("v", ["7", "7.3"])
@@ -463,7 +463,7 @@ def test_cmd_show_supported(capsys: pytest.CaptureFixture[str], v: str) -> None:
     )
     out, err = capsys.readouterr()
     assert out == ""
-    assert err == "pyversion-info: 'supported' only applies to CPython versions\n"
+    assert err == 'pyversion-info: "supported" only applies to CPython versions\n'
 
 
 @pytest.mark.parametrize("v", ["", "1.2.3.4", "1.2.3rc1", "foobar", "a.b.c"])

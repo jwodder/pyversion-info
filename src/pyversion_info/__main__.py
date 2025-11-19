@@ -176,11 +176,11 @@ class Mode(Enum):
                 filterer = info.is_released
             case Mode.SUPPORTED:
                 if not isinstance(info, CPythonVersionInfo):
-                    raise ValueError("'supported' only applies to CPython versions")
+                    raise ValueError('"supported" only applies to CPython versions')
                 filterer = info.is_supported
             case Mode.NOT_EOL:
                 if not isinstance(info, CPythonVersionInfo):
-                    raise ValueError("'not-eol' only applies to CPython versions")
+                    raise ValueError('"not-eol" only applies to CPython versions')
                 filterer = partial(is_not_eol, info)
             case mode:
                 raise AssertionError(f"Unexpected mode: {mode!r}")  # pragma: no cover
