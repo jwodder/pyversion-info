@@ -1,9 +1,6 @@
 from __future__ import annotations
 import json
 from pathlib import Path
-from traceback import format_exception
-import click
-from click.testing import CliRunner, Result
 import pytest
 from pytest_mock import MockerFixture
 from pyversion_info.__main__ import main
@@ -22,14 +19,6 @@ def use_fixed_date(mocker: MockerFixture) -> None:
     # Time is now 2019-04-23T16:46:48-04:00.
 
 
-def show_result(r: Result) -> str:
-    if r.exception is not None:
-        assert isinstance(r.exc_info, tuple)
-        return "".join(format_exception(*r.exc_info))
-    else:
-        return r.output
-
-
 @pytest.mark.parametrize(
     "mode,versions",
     [
@@ -39,14 +28,18 @@ def show_result(r: Result) -> str:
         ("--supported", ["2", "3"]),
     ],
 )
-def test_cmd_list_major(mode: str, versions: list[str]) -> None:
-    r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", mode, "major"])
-    assert r.exit_code == 0, show_result(r)
-    assert r.output == "".join(v + "\n" for v in versions)
+def test_cmd_list_major(
+    capsys: pytest.CaptureFixture[str], mode: str, versions: list[str]
+) -> None:
+    assert main(["-d", DATA_FILE, "list", mode, "major"]) == 0
+    out, err = capsys.readouterr()
+    assert out == "".join(v + "\n" for v in versions)
+    assert err == ""
     if mode == "--released":
-        r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "major"])
-        assert r.exit_code == 0, show_result(r)
-        assert r.output == "".join(v + "\n" for v in versions)
+        assert main(["-d", DATA_FILE, "list", "major"]) == 0
+        out, err = capsys.readouterr()
+        assert out == "".join(v + "\n" for v in versions)
+        assert err == ""
 
 
 @pytest.mark.parametrize(
@@ -116,14 +109,17 @@ def test_cmd_list_major(mode: str, versions: list[str]) -> None:
         ("--supported", ["2.7", "3.5", "3.6", "3.7"]),
     ],
 )
-def test_cmd_list_minor(mode: str, versions: list[str]) -> None:
-    r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", mode, "minor"])
-    assert r.exit_code == 0, show_result(r)
-    assert r.output == "".join(v + "\n" for v in versions)
+def test_cmd_list_minor(
+    capsys: pytest.CaptureFixture[str], mode: str, versions: list[str]
+) -> None:
+    assert main(["-d", DATA_FILE, "list", mode, "minor"]) == 0
+    out, err = capsys.readouterr()
+    assert out == "".join(v + "\n" for v in versions)
+    assert err == ""
     if mode == "--released":
-        r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "minor"])
-        assert r.exit_code == 0, show_result(r)
-        assert r.output == "".join(v + "\n" for v in versions)
+        assert main(["-d", DATA_FILE, "list", "minor"]) == 0
+        assert out == "".join(v + "\n" for v in versions)
+        assert err == ""
 
 
 @pytest.mark.parametrize(
@@ -511,14 +507,18 @@ def test_cmd_list_minor(mode: str, versions: list[str]) -> None:
         ),
     ],
 )
-def test_cmd_list_micro(mode: str, versions: list[str]) -> None:
-    r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", mode, "micro"])
-    assert r.exit_code == 0, show_result(r)
-    assert r.output == "".join(v + "\n" for v in versions)
+def test_cmd_list_micro(
+    capsys: pytest.CaptureFixture[str], mode: str, versions: list[str]
+) -> None:
+    assert main(["-d", DATA_FILE, "list", mode, "micro"]) == 0
+    out, err = capsys.readouterr()
+    assert out == "".join(v + "\n" for v in versions)
+    assert err == ""
     if mode == "--released":
-        r = CliRunner().invoke(main, ["-d", DATA_FILE, "list", "micro"])
-        assert r.exit_code == 0, show_result(r)
-        assert r.output == "".join(v + "\n" for v in versions)
+        assert main(["-d", DATA_FILE, "list", "micro"]) == 0
+        out, err = capsys.readouterr()
+        assert out == "".join(v + "\n" for v in versions)
+        assert err == ""
 
 
 @pytest.mark.parametrize(
@@ -1116,21 +1116,29 @@ def test_cmd_list_micro(mode: str, versions: list[str]) -> None:
         ),
     ],
 )
-def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
-    r = CliRunner().invoke(
-        main, ["-d", DATA_FILE, "show", "--subversions", subversions, version]
-    )
-    assert r.exit_code == 0, show_result(r)
-    assert r.output == headers
+def test_show(
+    capsys: pytest.CaptureFixture[str],
+    version: str,
+    subversions: str,
+    data: dict,
+    headers: str,
+) -> None:
+    assert main(["-d", DATA_FILE, "show", "--subversions", subversions, version]) == 0
+    out, err = capsys.readouterr()
+    assert out == headers
+    assert err == ""
     if subversions == "released":
-        r = CliRunner().invoke(main, ["-d", DATA_FILE, "show", version])
-        assert r.exit_code == 0, show_result(r)
-        assert r.output == headers
-    r = CliRunner().invoke(
-        main, ["-d", DATA_FILE, "show", "--json", "--subversions", subversions, version]
+        assert main(["-d", DATA_FILE, "show", version]) == 0
+        out, err = capsys.readouterr()
+        assert out == headers
+        assert err == ""
+    assert (
+        main(["-d", DATA_FILE, "show", "--json", "--subversions", subversions, version])
+        == 0
     )
-    assert r.exit_code == 0, show_result(r)
-    assert json.loads(r.output) == data
+    out, err = capsys.readouterr()
+    assert json.loads(out) == data
+    assert err == ""
 
 
 @pytest.mark.parametrize(
@@ -1223,24 +1231,31 @@ def test_show(version: str, subversions: str, data: dict, headers: str) -> None:
     ],
 )
 @pytest.mark.parametrize("subversions", ["released", "all", "supported", "not-eol"])
-def test_show_micro(version: str, subversions: str, data: dict, headers: str) -> None:
-    r = CliRunner().invoke(
-        main, ["-d", DATA_FILE, "show", "--subversions", subversions, version]
+def test_show_micro(
+    capsys: pytest.CaptureFixture[str],
+    version: str,
+    subversions: str,
+    data: dict,
+    headers: str,
+) -> None:
+    assert main(["-d", DATA_FILE, "show", "--subversions", subversions, version]) == 0
+    out, err = capsys.readouterr()
+    assert out == headers
+    assert err == ""
+    assert (
+        main(["-d", DATA_FILE, "show", "--json", "--subversions", subversions, version])
+        == 0
     )
-    assert r.exit_code == 0, show_result(r)
-    assert r.output == headers
-    r = CliRunner().invoke(
-        main, ["-d", DATA_FILE, "show", "--json", "--subversions", subversions, version]
-    )
-    assert r.exit_code == 0, show_result(r)
-    assert json.loads(r.output) == data
+    out, err = capsys.readouterr()
+    assert json.loads(out) == data
+    assert err == ""
 
 
-def test_show_recent(mocker: MockerFixture) -> None:
+def test_show_recent(capsys: pytest.CaptureFixture[str], mocker: MockerFixture) -> None:
     mocker.patch("time.time", return_value=1635992101)
-    r = CliRunner().invoke(main, ["-d", DATA_FILE, "show", "2"])
-    assert r.exit_code == 0, show_result(r)
-    assert r.output == (
+    assert main(["-d", DATA_FILE, "show", "2"]) == 0
+    out, err = capsys.readouterr()
+    assert out == (
         "Version: 2\n"
         "Level: major\n"
         "Release-Date: 2000-10-16\n"
@@ -1250,9 +1265,10 @@ def test_show_recent(mocker: MockerFixture) -> None:
         "Is-EOL: yes\n"
         "Subversions: 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7\n"
     )
-    r = CliRunner().invoke(main, ["-d", DATA_FILE, "show", "--json", "2"])
-    assert r.exit_code == 0, show_result(r)
-    assert json.loads(r.output) == {
+    assert err == ""
+    assert main(["-d", DATA_FILE, "show", "--json", "2"]) == 0
+    out, err = capsys.readouterr()
+    assert json.loads(out) == {
         "version": "2",
         "level": "major",
         "release_date": "2000-10-16",
@@ -1262,19 +1278,20 @@ def test_show_recent(mocker: MockerFixture) -> None:
         "is_eol": True,
         "subversions": ["2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"],
     }
+    assert err == ""
 
 
 @pytest.mark.parametrize("v", ["", "1.2.3.4", "1.2.3rc1", "foobar", "a.b.c"])
-def test_show_invalid_version(v: str) -> None:
-    r = CliRunner().invoke(main, ["-d", DATA_FILE, "show", v], standalone_mode=False)
-    assert r.exit_code != 0
-    assert isinstance(r.exception, click.UsageError)
-    assert str(r.exception) == f"Invalid version string: {v!r}"
+def test_show_invalid_version(capsys: pytest.CaptureFixture[str], v: str) -> None:
+    assert main(["-d", DATA_FILE, "show", v]) == 1
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == f"pyversion-info: Invalid version string: {v!r}\n"
 
 
 @pytest.mark.parametrize("v", ["0.8", "2.5.7", "3.9", "3.9.0", "5"])
-def test_show_unknown_version(v: str) -> None:
-    r = CliRunner().invoke(main, ["-d", DATA_FILE, "show", v], standalone_mode=False)
-    assert r.exit_code != 0
-    assert isinstance(r.exception, click.UsageError)
-    assert str(r.exception) == f"Unknown version: {v!r}"
+def test_show_unknown_version(capsys: pytest.CaptureFixture[str], v: str) -> None:
+    assert main(["-d", DATA_FILE, "show", v]) == 1
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == f"pyversion-info: Unknown version: {v!r}\n"
