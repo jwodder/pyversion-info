@@ -21,11 +21,11 @@ Global Options
 
 .. program:: pyversion-info
 
-.. option:: -d <database>, --database <database>
+.. option:: -d DATABASE, --database DATABASE
 
     Use the given JSON file as the version information database instead of
-    fetching data from the default URL.  ``<database>`` can be either an HTTP
-    or HTTPS URL or a path to a local file.
+    fetching data from the default URL.  ``DATABASE`` can be either an HTTP or
+    HTTPS URL or a path to a local file.
 
 
 :command:`pyversion-info list`
@@ -150,7 +150,7 @@ Options
 
     Show information about PyPy versions
 
-.. option:: -S, --subversions <all|not-eol|released|supported>
+.. option:: -S, --subversions {all|not-eol|released|supported}
 
     Which subversions to list (and, for PyPy versions, which subversions to
     take into account when determining supported CPython versions); the choices
