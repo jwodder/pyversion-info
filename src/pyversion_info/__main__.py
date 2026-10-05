@@ -47,7 +47,9 @@ class Command:
             "-V", "--version", action="version", version=f"%(prog)s {__version__}"
         )
 
-        subparsers = parser.add_subparsers(title="subcommands", dest="subcommand")
+        subparsers = parser.add_subparsers(
+            title="subcommands", dest="subcommand", required=True
+        )
 
         listparser = subparsers.add_parser(
             "list", help="List known versions at the given version level"

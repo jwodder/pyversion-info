@@ -1,3 +1,7 @@
+v1.3.0 (in development)
+-----------------------
+- Better error output when no arguments are provided to the CLI
+
 v1.2.5 (2025-11-19)
 -------------------
 - Support Python 3.14
