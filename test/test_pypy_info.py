@@ -1,15 +1,9 @@
 from __future__ import annotations
+from freezegun import freeze_time
 import pytest
-from pytest_mock import MockerFixture
 from pyversion_info import PyPyVersionInfo, UnknownVersionError, VersionDatabase
 
 INVALID_VERSIONS = ["", "1.2.3.4", "1.2.3rc1", "foobar", "a.b.c"]
-
-
-@pytest.fixture(autouse=True)
-def use_fixed_date(mocker: MockerFixture) -> None:
-    mocker.patch("time.time", return_value=1635992101)
-    # Time is now 2021-11-04T02:15:01+00:00.
 
 
 @pytest.fixture(scope="module")
@@ -17,6 +11,7 @@ def pypyinfo(version_database: VersionDatabase) -> PyPyVersionInfo:
     return version_database.pypy
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize(
     "version,cpythons",
     [
@@ -76,6 +71,7 @@ def test_supported_cpython(
     assert pypyinfo.supported_cpython(version) == cpythons
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize("v", INVALID_VERSIONS + ["7.3", "7"])
 def test_supported_cpython_invalid(pypyinfo: PyPyVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
@@ -83,6 +79,7 @@ def test_supported_cpython_invalid(pypyinfo: PyPyVersionInfo, v: str) -> None:
     assert str(excinfo.value) == f"Invalid micro version: {v!r}"
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize("v", ["0.8.0", "1.5.0", "3.0.0", "7.3.9", "9.0.0"])
 def test_supported_cpython_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:
@@ -91,6 +88,7 @@ def test_supported_cpython_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
     assert excinfo.value.version == v
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize(
     "version,series",
     [
@@ -107,6 +105,7 @@ def test_supported_cpython_series(
         assert pypyinfo.supported_cpython_series(version) == series
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize(
     "version,released,series",
     [
@@ -126,6 +125,7 @@ def test_supported_cpython_series_released(
         assert pypyinfo.supported_cpython_series(version) == series
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize("v", INVALID_VERSIONS)
 def test_supported_cpython_series_invalid(pypyinfo: PyPyVersionInfo, v: str) -> None:
     with pytest.raises(ValueError) as excinfo:
@@ -133,6 +133,7 @@ def test_supported_cpython_series_invalid(pypyinfo: PyPyVersionInfo, v: str) -> 
     assert str(excinfo.value) == f"Invalid version string: {v!r}"
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize("v", ["0.8", "1.5", "3", "7.3.9", "9.0.0"])
 def test_supported_cpython_series_unknown(pypyinfo: PyPyVersionInfo, v: str) -> None:
     with pytest.raises(UnknownVersionError) as excinfo:

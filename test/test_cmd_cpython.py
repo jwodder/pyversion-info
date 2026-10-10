@@ -1,24 +1,14 @@
 from __future__ import annotations
 import json
 from pathlib import Path
+from freezegun import freeze_time
 import pytest
-from pytest_mock import MockerFixture
 from pyversion_info.__main__ import main
 
 DATA_FILE = str(Path(__file__).with_name("data") / "pyversion-info-data.json")
 
 
-@pytest.fixture(autouse=True)
-def use_fixed_date(mocker: MockerFixture) -> None:
-    # Mocking/monkeypatching just the `today()` method of `date` doesn't seem
-    # to be an option, and monkeypatching the `date` class with a custom class
-    # that just implements `today()` causes problems on PyPy.  Fortunately,
-    # both CPython and PyPy implement `date.today()` by calling `time.time()`,
-    # so we just need to mock that and hope the implementation never changes.
-    mocker.patch("time.time", return_value=1556052408)
-    # Time is now 2019-04-23T16:46:48-04:00.
-
-
+@freeze_time("2019-04-23")
 @pytest.mark.parametrize(
     "mode,versions",
     [
@@ -42,6 +32,7 @@ def test_cmd_list_major(
         assert err == ""
 
 
+@freeze_time("2019-04-23")
 @pytest.mark.parametrize(
     "mode,versions",
     [
@@ -122,6 +113,7 @@ def test_cmd_list_minor(
         assert err == ""
 
 
+@freeze_time("2019-04-23")
 @pytest.mark.parametrize(
     "mode,versions",
     [
@@ -521,6 +513,7 @@ def test_cmd_list_micro(
         assert err == ""
 
 
+@freeze_time("2019-04-23")
 @pytest.mark.parametrize(
     "version,subversions,data,headers",
     [
@@ -1141,6 +1134,7 @@ def test_show(
     assert err == ""
 
 
+@freeze_time("2019-04-23")
 @pytest.mark.parametrize(
     "version,data,headers",
     [
@@ -1251,8 +1245,8 @@ def test_show_micro(
     assert err == ""
 
 
-def test_show_recent(capsys: pytest.CaptureFixture[str], mocker: MockerFixture) -> None:
-    mocker.patch("time.time", return_value=1635992101)
+@freeze_time("2021-11-03")
+def test_show_recent(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["-d", DATA_FILE, "show", "2"]) == 0
     out, err = capsys.readouterr()
     assert out == (
@@ -1281,6 +1275,7 @@ def test_show_recent(capsys: pytest.CaptureFixture[str], mocker: MockerFixture) 
     assert err == ""
 
 
+@freeze_time("2019-04-23")
 @pytest.mark.parametrize("v", ["", "1.2.3.4", "1.2.3rc1", "foobar", "a.b.c"])
 def test_show_invalid_version(capsys: pytest.CaptureFixture[str], v: str) -> None:
     assert main(["-d", DATA_FILE, "show", v]) == 1
@@ -1289,6 +1284,7 @@ def test_show_invalid_version(capsys: pytest.CaptureFixture[str], v: str) -> Non
     assert err == f"pyversion-info: Invalid version string: {v!r}\n"
 
 
+@freeze_time("2019-04-23")
 @pytest.mark.parametrize("v", ["0.8", "2.5.7", "3.9", "3.9.0", "5"])
 def test_show_unknown_version(capsys: pytest.CaptureFixture[str], v: str) -> None:
     assert main(["-d", DATA_FILE, "show", v]) == 1
