@@ -1,19 +1,14 @@
 from __future__ import annotations
 import json
 from pathlib import Path
+from freezegun import freeze_time
 import pytest
-from pytest_mock import MockerFixture
 from pyversion_info.__main__ import main
 
 DATA_FILE = str(Path(__file__).with_name("data") / "pyversion-info-data.json")
 
 
-@pytest.fixture(autouse=True)
-def use_fixed_date(mocker: MockerFixture) -> None:
-    mocker.patch("time.time", return_value=1635992101)
-    # Time is now 2021-11-04T02:15:01+00:00.
-
-
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize(
     "mode,versions",
     [
@@ -65,6 +60,7 @@ RELEASED_MINOR = [
 ]
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize(
     "mode,versions",
     [
@@ -138,6 +134,7 @@ RELEASED_MICRO = [
 ]
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize(
     "mode,versions",
     [
@@ -159,6 +156,7 @@ def test_cmd_list_micro(
         assert err == ""
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize("level", ["major", "minor", "micro"])
 def test_cmd_list_not_eol(capsys: pytest.CaptureFixture[str], level: str) -> None:
     assert (
@@ -172,6 +170,7 @@ def test_cmd_list_not_eol(capsys: pytest.CaptureFixture[str], level: str) -> Non
     assert err == 'pyversion-info: "not-eol" only applies to CPython versions\n'
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize("level", ["major", "minor", "micro"])
 def test_cmd_list_supported(capsys: pytest.CaptureFixture[str], level: str) -> None:
     assert (
@@ -185,6 +184,7 @@ def test_cmd_list_supported(capsys: pytest.CaptureFixture[str], level: str) -> N
     assert err == 'pyversion-info: "supported" only applies to CPython versions\n'
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize(
     "version,data,headers",
     [
@@ -316,6 +316,7 @@ def test_show(
     assert err == ""
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize(
     "version,subversions,data,headers",
     [
@@ -440,6 +441,7 @@ def test_show_not_all_released(
     assert err == ""
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize("v", ["7", "7.3"])
 def test_cmd_show_not_eol(capsys: pytest.CaptureFixture[str], v: str) -> None:
     assert (
@@ -453,6 +455,7 @@ def test_cmd_show_not_eol(capsys: pytest.CaptureFixture[str], v: str) -> None:
     assert err == 'pyversion-info: "not-eol" only applies to CPython versions\n'
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize("v", ["7", "7.3"])
 def test_cmd_show_supported(capsys: pytest.CaptureFixture[str], v: str) -> None:
     assert (
@@ -466,6 +469,7 @@ def test_cmd_show_supported(capsys: pytest.CaptureFixture[str], v: str) -> None:
     assert err == 'pyversion-info: "supported" only applies to CPython versions\n'
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize("v", ["", "1.2.3.4", "1.2.3rc1", "foobar", "a.b.c"])
 def test_show_invalid_version(capsys: pytest.CaptureFixture[str], v: str) -> None:
     assert main(["-d", DATA_FILE, "show", "--pypy", v]) == 1
@@ -474,6 +478,7 @@ def test_show_invalid_version(capsys: pytest.CaptureFixture[str], v: str) -> Non
     assert err == f"pyversion-info: Invalid version string: {v!r}\n"
 
 
+@freeze_time("2021-11-04")
 @pytest.mark.parametrize("v", ["0.8", "1.5", "3", "7.3.9", "9.0.0"])
 def test_show_unknown_version(capsys: pytest.CaptureFixture[str], v: str) -> None:
     assert main(["-d", DATA_FILE, "show", "--pypy", v]) == 1
