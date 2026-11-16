@@ -2,6 +2,7 @@ v1.3.0 (in development)
 -----------------------
 - Better error output when no arguments are provided to the CLI
 - Support Python 3.15
+- Support cachecontrol v0.15
 
 v1.2.5 (2025-11-19)
 -------------------
